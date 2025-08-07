@@ -24,11 +24,24 @@ repositories {
 }
 
 dependencies {
+  // Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+  // Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+  // Database
+  runtimeOnly 'org.postgresql:postgresql'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+  // Migration
+  implementation 'org.flywaydb:flyway-core:11.10.2'
+  runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.10.2'
+
+  // Testing
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
