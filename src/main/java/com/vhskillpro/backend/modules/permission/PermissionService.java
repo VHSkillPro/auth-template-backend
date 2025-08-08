@@ -3,6 +3,8 @@ package com.vhskillpro.backend.modules.permission;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.vhskillpro.backend.modules.permission.dto.PermissionDTO;
@@ -15,6 +17,21 @@ public class PermissionService {
   public PermissionService(PermissionRepository permissionRepository, ModelMapper modelMapper) {
     this.permissionRepository = permissionRepository;
     this.modelMapper = modelMapper;
+  }
+
+  /**
+   * Retrieves a paginated list of PermissionDTO objects whose name and title
+   * contain the specified keyword (case-insensitive).
+   *
+   * @param keyword  the keyword to search for in the name and title fields of
+   *                 permissions
+   * @param pageable the pagination and sorting information
+   * @return a page of PermissionDTO objects matching the search criteria
+   */
+  public Page<PermissionDTO> findAll(String keyword, Pageable pageable) {
+    Page<Permission> permissions = permissionRepository.findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
+        keyword, keyword, pageable);
+    return permissions.map(permission -> modelMapper.map(permission, PermissionDTO.class));
   }
 
   /**

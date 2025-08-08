@@ -1,5 +1,8 @@
 package com.vhskillpro.backend.common.response;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -69,6 +72,26 @@ public class ApiResponse<T> {
         .message(message)
         .data(data)
         .meta(null)
+        .build();
+  }
+
+  /**
+   * Creates a successful {@link ApiResponse} containing a paginated list of data
+   * and an optional message.
+   *
+   * @param <T>     the type of elements in the page
+   * @param data    the {@link Page} containing the data to be returned
+   * @param message a message describing the response
+   * @return an {@link ApiResponse} with the list of items, pagination metadata,
+   *         and success status
+   */
+  public static <T> ApiResponse<List<T>> success(Page<T> data, String message) {
+    return ApiResponse.<List<T>>builder()
+        .success(true)
+        .statusCode(HttpStatus.OK.value())
+        .message(message)
+        .data(data.getContent())
+        .meta(PageableMetaResponse.from(data))
         .build();
   }
 
