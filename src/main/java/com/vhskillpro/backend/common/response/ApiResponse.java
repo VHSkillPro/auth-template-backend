@@ -8,17 +8,28 @@ import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.vhskillpro.backend.exception.AppException;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Standard API response structure")
 public class ApiResponse<T> {
+  @Schema(description = "Indicates whether the API call was successful", example = "true")
   private boolean success;
+
+  @Schema(description = "HTTP status code of the response", example = "200")
   private int statusCode;
+
+  @Schema(description = "Message describing the result of the API call", example = "Operation successful")
   private String message;
+
+  @Schema(description = "Data returned by the API call")
   private T data;
+
+  @Schema(description = "Pagination metadata for the response")
   private PageableMetaResponse meta;
 
   /**

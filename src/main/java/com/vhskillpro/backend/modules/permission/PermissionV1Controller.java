@@ -15,8 +15,16 @@ import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.permission.dto.PermissionDTO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/v1/permission")
+@Tag(name = "Permission (V1)", description = "APIs for retrieving system permissions")
 public class PermissionV1Controller {
   private PermissionService permissionService;
 
@@ -33,6 +41,16 @@ public class PermissionV1Controller {
    * @return an {@link ApiResponse} containing a list of {@link PermissionDTO}
    *         objects and a success message
    */
+  @Operation(summary = "Get paginated permissions list", description = "Fetches a list of permissions with optional keyword-based search and pagination. "
+      + "If no keyword is provided, all permissions are returned.", parameters = {
+          @Parameter(name = "keyword", description = "Search keyword to filter permissions", example = "read"),
+          @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
+          @Parameter(name = "size", description = "Number of items per page", example = "10"),
+          @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)", example = "name,asc")
+      }, responses = {
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permissions list retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request parameters", content = @Content(mediaType = "application/json")),
+      })
   @GetMapping
   public ApiResponse<List<PermissionDTO>> index(
       @RequestParam(defaultValue = "") String keyword, Pageable pageable) {
@@ -48,6 +66,12 @@ public class PermissionV1Controller {
    *         success message
    * @throws AppException if the permission with the specified ID is not found
    */
+  @Operation(summary = "Get permission by ID", description = "Fetches the details of a specific permission by its ID.", parameters = {
+      @Parameter(name = "id", description = "ID of the permission to retrieve", example = "1")
+  }, responses = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permission retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Permission not found", content = @Content(mediaType = "application/json"))
+  })
   @GetMapping("/{id}")
   public ApiResponse<PermissionDTO> show(@PathVariable Long id) {
     PermissionDTO permissionDTO = permissionService.findById(id)
