@@ -44,6 +44,13 @@ dependencies {
   implementation 'org.flywaydb:flyway-core:11.10.2'
   runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.10.2'
 
+  // Faker
+  testImplementation ('com.github.javafaker:javafaker:1.0.2') { exclude module: 'snakeyaml' }
+  testImplementation 'org.yaml:snakeyaml:2.4'
+
+  // Mocking
+  testImplementation 'org.mockito:mockito-core:5.18.0'
+
   // Testing
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
