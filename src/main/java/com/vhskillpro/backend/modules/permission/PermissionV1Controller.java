@@ -37,12 +37,12 @@ public class PermissionV1Controller {
    * @param keyword  the search keyword to filter permissions (optional, defaults
    *                 to empty string)
    * @param pageable the pagination and sorting information
-   * @return an {@link ApiResponse} containing a list of {@link PermissionDTO}
-   *         objects and a success message
+   * @return an {@link PagedApiResponse} containing a list of
+   *         {@link PermissionDTO} objects and a success message
    */
   @Operation(summary = "Get paginated permissions list", description = "Fetches a list of permissions with optional keyword-based search and pagination. "
       + "If no keyword is provided, all permissions are returned.", parameters = {
-          @Parameter(name = "keyword", description = "Search keyword to filter permissions", example = "read"),
+          @Parameter(name = "keyword", description = "Search keyword to filter", example = "read"),
           @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
           @Parameter(name = "size", description = "Number of items per page", example = "10"),
           @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)", example = "name,asc")
@@ -60,7 +60,7 @@ public class PermissionV1Controller {
    * Retrieves the details of a specific permission by its ID.
    *
    * @param id the ID of the permission to retrieve
-   * @return an {@link ApiResponse} containing the {@link PermissionDTO} and a
+   * @return an {@link DataApiResponse} containing the {@link PermissionDTO} and a
    *         success message
    * @throws AppException if the permission with the specified ID is not found
    */

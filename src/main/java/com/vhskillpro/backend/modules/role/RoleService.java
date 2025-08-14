@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
+import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
 
 import jakarta.transaction.Transactional;
 
@@ -26,8 +27,6 @@ public class RoleService {
    * each Role entity to a RoleDTO.
    * The search is performed on both the name and title fields of the Role entity,
    * ignoring case sensitivity.
-   * The permissions field in RoleDTO is intentionally skipped during the mapping
-   * process.
    *
    * @param keyword  the keyword to filter roles by name and title
    * @param pageable the pagination information
@@ -35,25 +34,21 @@ public class RoleService {
    */
   @Transactional
   public Page<RoleDTO> findAll(String keyword, Pageable pageable) {
-    Page<RoleDTO> roleDTOsPage = roleRepository
+    return roleRepository
         .findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(keyword, keyword, pageable)
         .map(role -> modelMapper.map(role, RoleDTO.class));
-
-    return roleDTOsPage.map(roleDTO -> {
-      roleDTO.setPermissions(null);
-      return roleDTO;
-    });
   }
 
   /**
-   * Retrieves a role by its unique identifier and maps it to a RoleDTO.
+   * Retrieves a role by its unique identifier and maps it to a RoleDetailDTO.
    *
    * @param id the unique identifier of the role to retrieve
-   * @return an {@link Optional} containing the mapped {@link RoleDTO} if found,
-   *         or an empty Optional if not found
+   * @return an {@link Optional} containing the mapped {@link RoleDetailDTO} if
+   *         found, or an empty Optional if not found
    */
   @Transactional
-  public Optional<RoleDTO> findById(Long id) {
-    return roleRepository.findById(id).map(role -> modelMapper.map(role, RoleDTO.class));
+  public Optional<RoleDetailDTO> findById(Long id) {
+    return roleRepository.findById(id)
+        .map(role -> modelMapper.map(role, RoleDetailDTO.class));
   }
 }
