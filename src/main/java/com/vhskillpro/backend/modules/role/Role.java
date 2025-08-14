@@ -1,15 +1,13 @@
 package com.vhskillpro.backend.modules.role;
 
-import java.util.List;
-
 import com.vhskillpro.backend.common.entity.BaseEntity;
 import com.vhskillpro.backend.modules.permission.Permission;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,6 +31,9 @@ public class Role extends BaseEntity {
   private String description;
 
   @ManyToMany
-  @JoinTable(name = "tbl_role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+  @JoinTable(
+      name = "tbl_role_permission",
+      joinColumns = @JoinColumn(name = "role_id"),
+      inverseJoinColumns = @JoinColumn(name = "permission_id"))
   private List<Permission> permissions;
 }

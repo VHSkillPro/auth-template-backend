@@ -1,5 +1,9 @@
 package com.vhskillpro.backend.exception;
 
+import com.vhskillpro.backend.common.constants.MessageConstants;
+import com.vhskillpro.backend.common.response.ApiResponse;
+import com.vhskillpro.backend.common.response.BadRequestResponse;
+import com.vhskillpro.backend.common.response.DataApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -9,18 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.vhskillpro.backend.common.constants.MessageConstants;
-import com.vhskillpro.backend.common.response.ApiResponse;
-import com.vhskillpro.backend.common.response.BadRequestResponse;
-import com.vhskillpro.backend.common.response.DataApiResponse;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   /**
-   * Handles exceptions of type {@link AppException} thrown within the
-   * application.
+   * Handles exceptions of type {@link AppException} thrown within the application.
    *
    * @param ex the {@link AppException} instance that was thrown
    * @return an {@link ApiResponse} containing information about the exception
@@ -32,32 +30,26 @@ public class GlobalExceptionHandler {
 
   /**
    * Handles exceptions thrown when method arguments fail validation.
-   * <p>
-   * This method is invoked when a {@link MethodArgumentNotValidException} is
-   * thrown,
-   * typically due to validation errors on request parameters or body.
-   * It constructs a {@link BadRequestResponse} from the exception and wraps it
-   * in
-   * a
-   * {@link DataApiResponse} with a bad request status and a standard error
-   * message.
+   *
+   * <p>This method is invoked when a {@link MethodArgumentNotValidException} is thrown, typically
+   * due to validation errors on request parameters or body. It constructs a {@link
+   * BadRequestResponse} from the exception and wraps it in a {@link DataApiResponse} with a bad
+   * request status and a standard error message.
    *
    * @param ex the exception containing validation errors
-   * @return a {@link DataApiResponse} containing the bad request details and
-   *         error message
+   * @return a {@link DataApiResponse} containing the bad request details and error message
    */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public DataApiResponse<BadRequestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+  public DataApiResponse<BadRequestResponse> handleMethodArgumentNotValidException(
+      MethodArgumentNotValidException ex) {
     BadRequestResponse response = BadRequestResponse.from(ex);
-    return DataApiResponse.badRequest(response,
-        MessageConstants.BAD_REQUEST.getMessage());
+    return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.getMessage());
   }
 
   /**
-   * Handles all uncaught exceptions thrown within the application.
-   * Logs the exception details and returns a standardized internal server error
-   * response.
+   * Handles all uncaught exceptions thrown within the application. Logs the exception details and
+   * returns a standardized internal server error response.
    *
    * @param ex the exception that was thrown
    * @return an {@link ApiResponse} indicating an internal server error

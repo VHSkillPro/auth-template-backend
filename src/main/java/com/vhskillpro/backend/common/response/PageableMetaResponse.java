@@ -1,12 +1,10 @@
 package com.vhskillpro.backend.common.response;
 
-import org.springframework.data.domain.Page;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.domain.Page;
 
 @Data
 @Builder
@@ -29,12 +27,11 @@ public class PageableMetaResponse {
   private String sort;
 
   /**
-   * Creates a {@link PageableMetaResponse} instance from a given {@link Page}
-   * object.
+   * Creates a {@link PageableMetaResponse} instance from a given {@link Page} object.
    *
    * @param page the {@link Page} object containing pagination information
-   * @return a {@link PageableMetaResponse} populated with page number, size,
-   *         total elements, total pages, and sort order
+   * @return a {@link PageableMetaResponse} populated with page number, size, total elements, total
+   *     pages, and sort order
    */
   public static PageableMetaResponse from(Page<?> page) {
     return PageableMetaResponse.builder()

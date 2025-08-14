@@ -1,5 +1,15 @@
 package com.vhskillpro.backend.modules.permission;
 
+import com.vhskillpro.backend.common.response.ApiResponse;
+import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.response.PagedApiResponse;
+import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.permission.dto.PermissionDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -8,18 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.vhskillpro.backend.common.response.ApiResponse;
-import com.vhskillpro.backend.common.response.DataApiResponse;
-import com.vhskillpro.backend.common.response.PagedApiResponse;
-import com.vhskillpro.backend.exception.AppException;
-import com.vhskillpro.backend.modules.permission.dto.PermissionDTO;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/permission")
@@ -34,53 +32,87 @@ public class PermissionV1Controller {
   /**
    * Retrieves a paginated list of permissions, optionally filtered by a keyword.
    *
-   * @param keyword  the search keyword to filter permissions (optional, defaults
-   *                 to empty string)
+   * @param keyword the search keyword to filter permissions (optional, defaults to empty string)
    * @param pageable the pagination and sorting information
-   * @return an {@link PagedApiResponse} containing a list of
-   *         {@link PermissionDTO} objects and a success message
+   * @return an {@link PagedApiResponse} containing a list of {@link PermissionDTO} objects and a
+   *     success message
    */
-  @Operation(summary = "Get paginated permissions list", description = "Fetches a list of permissions with optional keyword-based search and pagination. "
-      + "If no keyword is provided, all permissions are returned.", parameters = {
-          @Parameter(name = "keyword", description = "Search keyword to filter", example = "read"),
-          @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
-          @Parameter(name = "size", description = "Number of items per page", example = "10"),
-          @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc)", example = "name,asc")
-      }, responses = {
-          @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permissions list retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = PagedApiResponsePermissionDTO.class)))
+  @Operation(
+      summary = "Get paginated permissions list",
+      description =
+          "Fetches a list of permissions with optional keyword-based search and pagination. "
+              + "If no keyword is provided, all permissions are returned.",
+      parameters = {
+        @Parameter(name = "keyword", description = "Search keyword to filter", example = "read"),
+        @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
+        @Parameter(name = "size", description = "Number of items per page", example = "10"),
+        @Parameter(
+            name = "sort",
+            description = "Sorting criteria in the format: property(,asc|desc)",
+            example = "name,asc")
+      },
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Permissions list retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = PagedApiResponsePermissionDTO.class)))
       })
   @GetMapping
   public PagedApiResponse<PermissionDTO> index(
-      @RequestParam(defaultValue = "") String keyword, @Parameter(hidden = true) Pageable pageable) {
+      @RequestParam(defaultValue = "") String keyword,
+      @Parameter(hidden = true) Pageable pageable) {
     Page<PermissionDTO> permissions = permissionService.findAll(keyword, pageable);
-    return PagedApiResponse.success(permissions, PermissionMessages.PERMISSION_INDEX_SUCCESS.getMessage());
+    return PagedApiResponse.success(
+        permissions, PermissionMessages.PERMISSION_INDEX_SUCCESS.getMessage());
   }
 
   /**
    * Retrieves the details of a specific permission by its ID.
    *
    * @param id the ID of the permission to retrieve
-   * @return an {@link DataApiResponse} containing the {@link PermissionDTO} and a
-   *         success message
+   * @return an {@link DataApiResponse} containing the {@link PermissionDTO} and a success message
    * @throws AppException if the permission with the specified ID is not found
    */
-  @Operation(summary = "Get permission by ID", description = "Fetches the details of a specific permission by its ID.", parameters = {
-      @Parameter(name = "id", description = "ID of the permission to retrieve", example = "1")
-  }, responses = {
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Permission retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = DataApiResponsePermissionDTO.class))),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Permission not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class)))
-  })
+  @Operation(
+      summary = "Get permission by ID",
+      description = "Fetches the details of a specific permission by its ID.",
+      parameters = {
+        @Parameter(name = "id", description = "ID of the permission to retrieve", example = "1")
+      },
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Permission retrieved successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = DataApiResponsePermissionDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Permission not found",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiResponse.class)))
+      })
   @GetMapping("/{id}")
   public DataApiResponse<PermissionDTO> show(@PathVariable Long id) {
-    PermissionDTO permissionDTO = permissionService.findById(id)
-        .orElseThrow(
-            () -> new AppException(HttpStatus.NOT_FOUND, PermissionMessages.PERMISSION_NOT_FOUND.getMessage()));
-    return DataApiResponse.success(permissionDTO, PermissionMessages.PERMISSION_SHOW_SUCCESS.getMessage());
+    PermissionDTO permissionDTO =
+        permissionService
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND,
+                        PermissionMessages.PERMISSION_NOT_FOUND.getMessage()));
+    return DataApiResponse.success(
+        permissionDTO, PermissionMessages.PERMISSION_SHOW_SUCCESS.getMessage());
   }
 
-  private class PagedApiResponsePermissionDTO extends PagedApiResponse<PermissionDTO> {
-  }
+  private class PagedApiResponsePermissionDTO extends PagedApiResponse<PermissionDTO> {}
 
-  private class DataApiResponsePermissionDTO extends DataApiResponse<PermissionDTO> {
-  }
+  private class DataApiResponsePermissionDTO extends DataApiResponse<PermissionDTO> {}
 }

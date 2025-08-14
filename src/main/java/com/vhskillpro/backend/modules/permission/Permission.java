@@ -1,7 +1,6 @@
 package com.vhskillpro.backend.modules.permission;
 
 import com.vhskillpro.backend.common.entity.BaseEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
