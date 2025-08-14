@@ -3,6 +3,7 @@ package com.vhskillpro.backend.modules.role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -101,6 +102,28 @@ public class RoleV1Controller {
   public ApiResponse<Void> create(@Valid @RequestBody RoleCreateDTO roleCreateDTO) {
     roleService.create(roleCreateDTO);
     return ApiResponse.created(RoleMessages.ROLE_CREATE_SUCCESS.getMessage());
+  }
+
+  /**
+   * Deletes a role by its ID.
+   *
+   * @param id the ID of the role to delete
+   * @return an {@link ApiResponse} indicating the result of the deletion
+   *         operation
+   * @throws AppException if the role with the specified ID is not found
+   */
+  @Operation(summary = "Delete role by ID", description = "Deletes a specific role by its ID.", parameters = {
+      @Parameter(name = "id", description = "ID of the role to delete", example = "1")
+  }, responses = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Role deleted successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class)))
+  })
+  @DeleteMapping("/{id}")
+  public ApiResponse<Void> delete(@PathVariable Long id) {
+    if (!roleService.delete(id)) {
+      throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage());
+    }
+    return ApiResponse.success(RoleMessages.ROLE_DELETE_SUCCESS.getMessage());
   }
 
   private class PagedApiResponseRoleDTO extends PagedApiResponse<RoleDTO> {

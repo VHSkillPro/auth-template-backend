@@ -20,7 +20,9 @@ public class RoleService {
   private RoleRepository roleRepository;
   private PermissionRepository permissionRepository;
 
-  public RoleService(ModelMapper modelMapper, RoleRepository roleRepository,
+  public RoleService(
+      ModelMapper modelMapper,
+      RoleRepository roleRepository,
       PermissionRepository permissionRepository) {
     this.roleRepository = roleRepository;
     this.modelMapper = modelMapper;
@@ -66,6 +68,7 @@ public class RoleService {
    *                      permission IDs
    * @return the detailed data transfer object of the saved role
    */
+  @Transactional
   public RoleDetailDTO create(RoleCreateDTO roleCreateDTO) {
     Role role = Role.builder()
         .name(roleCreateDTO.getName())
@@ -76,5 +79,26 @@ public class RoleService {
 
     role = roleRepository.save(role);
     return modelMapper.map(role, RoleDetailDTO.class);
+  }
+
+  /**
+   * Deletes a role by its ID.
+   * <p>
+   * This method first checks if the role with the specified ID exists.
+   * If it does, it deletes all associated role permissions and then deletes the
+   * role itself.
+   * Returns {@code true} if the role was deleted successfully, or {@code false}
+   * if the role does not exist.
+   *
+   * @param roleId the ID of the role to delete
+   * @return {@code true} if the role was deleted, {@code false} otherwise
+   */
+  @Transactional
+  public boolean delete(Long roleId) {
+    if (!roleRepository.existsById(roleId)) {
+      return false;
+    }
+    roleRepository.deleteById(roleId);
+    return true;
   }
 }
