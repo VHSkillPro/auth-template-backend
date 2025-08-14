@@ -1,5 +1,7 @@
 package com.vhskillpro.backend.modules.role;
 
+import javax.management.relation.RoleNotFoundException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +24,7 @@ import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
+import com.vhskillpro.backend.modules.role.dto.RoleUpdateDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -105,12 +109,34 @@ public class RoleV1Controller {
   }
 
   /**
-   * Deletes a role by its ID.
+   * Updates an existing role with the specified ID using the provided update
+   * data.
+   *
+   * @param id            the ID of the role to update
+   * @param roleUpdateDTO the data transfer object containing updated role
+   *                      information
+   * @return an {@link ApiResponse} indicating the success of the update operation
+   */
+  @Operation(summary = "Update role by ID", description = "Updates an existing role with the specified ID using the provided update data.", parameters = {
+      @Parameter(name = "id", description = "ID of the role to update", example = "1")
+  }, responses = {
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Role updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BadRequestDataApiResponse.class))),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Role not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class)))
+  })
+  @PutMapping("/{id}")
+  public ApiResponse<Void> update(@PathVariable Long id, @Valid @RequestBody RoleUpdateDTO roleUpdateDTO) {
+    roleService.update(id, roleUpdateDTO);
+    return ApiResponse.success(RoleMessages.ROLE_UPDATE_SUCCESS.getMessage());
+  }
+
+  /**
+   * Deletes a specific role by its ID.
    *
    * @param id the ID of the role to delete
-   * @return an {@link ApiResponse} indicating the result of the deletion
-   *         operation
-   * @throws AppException if the role with the specified ID is not found
+   * @return an {@link ApiResponse} indicating success or failure of the deletion
+   * @throws RoleNotFoundException if the role with the specified ID does not
+   *                               exist
    */
   @Operation(summary = "Delete role by ID", description = "Deletes a specific role by its ID.", parameters = {
       @Parameter(name = "id", description = "ID of the role to delete", example = "1")
@@ -120,9 +146,7 @@ public class RoleV1Controller {
   })
   @DeleteMapping("/{id}")
   public ApiResponse<Void> delete(@PathVariable Long id) {
-    if (!roleService.delete(id)) {
-      throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage());
-    }
+    roleService.delete(id);
     return ApiResponse.success(RoleMessages.ROLE_DELETE_SUCCESS.getMessage());
   }
 

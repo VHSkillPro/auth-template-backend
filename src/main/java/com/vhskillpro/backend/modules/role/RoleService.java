@@ -5,12 +5,15 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.permission.PermissionRepository;
 import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
+import com.vhskillpro.backend.modules.role.dto.RoleUpdateDTO;
 
 import jakarta.transaction.Transactional;
 
@@ -82,21 +85,48 @@ public class RoleService {
   }
 
   /**
+   * Updates an existing role with the provided details.
+   * <p>
+   * Finds the role by its ID, updates its title, description, and permissions,
+   * then saves the changes and returns the updated role as a
+   * {@link RoleDetailDTO}.
+   * </p>
+   *
+   * @param id            the ID of the role to update
+   * @param roleUpdateDTO the DTO containing updated role information
+   * @return the updated role details as a {@link RoleDetailDTO}
+   * @throws AppException if the role with the specified ID is not found
+   */
+  @Transactional
+  public RoleDetailDTO update(Long id, RoleUpdateDTO roleUpdateDTO) {
+    Role role = roleRepository.findById(id).orElseThrow(
+        () -> new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage()));
+
+    role.setTitle(roleUpdateDTO.getTitle());
+    role.setDescription(roleUpdateDTO.getDescription());
+    role.setPermissions(permissionRepository.findAllById(roleUpdateDTO.getPermissionIds()));
+
+    role = roleRepository.save(role);
+    return modelMapper.map(role, RoleDetailDTO.class);
+  }
+
+  /**
    * Deletes a role by its ID.
    * <p>
-   * This method first checks if the role with the specified ID exists.
-   * If it does, it deletes all associated role permissions and then deletes the
-   * role itself.
-   * Returns {@code true} if the role was deleted successfully, or {@code false}
-   * if the role does not exist.
+   * Checks if the role exists before attempting deletion. If the role does not
+   * exist,
+   * throws an {@link AppException} with a NOT_FOUND status and a relevant
+   * message.
+   * </p>
    *
    * @param roleId the ID of the role to delete
-   * @return {@code true} if the role was deleted, {@code false} otherwise
+   * @return {@code true} if the role was successfully deleted
+   * @throws AppException if the role with the specified ID does not exist
    */
   @Transactional
   public boolean delete(Long roleId) {
     if (!roleRepository.existsById(roleId)) {
-      return false;
+      throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage());
     }
     roleRepository.deleteById(roleId);
     return true;
