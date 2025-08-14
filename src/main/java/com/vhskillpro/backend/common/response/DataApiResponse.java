@@ -1,4 +1,4 @@
-package com.vhskillpro.backend.common.responsev2;
+package com.vhskillpro.backend.common.response;
 
 import org.springframework.http.HttpStatus;
 

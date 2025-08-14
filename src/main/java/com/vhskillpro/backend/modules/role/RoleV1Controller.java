@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vhskillpro.backend.common.responsev2.ApiResponse;
-import com.vhskillpro.backend.common.responsev2.DataApiResponse;
-import com.vhskillpro.backend.common.responsev2.PagedApiResponse;
+import com.vhskillpro.backend.common.response.ApiResponse;
+import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.response.PagedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
