@@ -36,4 +36,24 @@ public class DataApiResponse<T> extends ApiResponse<T> {
         .data(data)
         .build();
   }
+
+  /**
+   * Creates a {@link DataApiResponse} representing a bad request (HTTP 400)
+   * response.
+   *
+   * @param data    the {@link BadRequestResponse} payload containing details
+   *                about the bad request
+   * @param message a descriptive message explaining the reason for the bad
+   *                request
+   * @return a {@link DataApiResponse} with success set to false, status code 400,
+   *         the provided message, and data
+   */
+  public static DataApiResponse<BadRequestResponse> badRequest(BadRequestResponse data, String message) {
+    return DataApiResponse.<BadRequestResponse>builder()
+        .success(false)
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .message(message)
+        .data(data)
+        .build();
+  }
 }

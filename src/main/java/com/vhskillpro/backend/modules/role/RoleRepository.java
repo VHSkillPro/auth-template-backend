@@ -21,4 +21,12 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
       String name,
       String title,
       Pageable pageable);
+
+  /**
+   * Checks if a role with the specified name exists in the repository.
+   *
+   * @param name the name of the role to check for existence
+   * @return true if a role with the given name exists, false otherwise
+   */
+  public boolean existsByName(String name);
 }

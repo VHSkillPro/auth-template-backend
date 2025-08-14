@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.vhskillpro.backend.modules.permission.PermissionRepository;
+import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
 
@@ -16,10 +18,13 @@ import jakarta.transaction.Transactional;
 public class RoleService {
   private ModelMapper modelMapper;
   private RoleRepository roleRepository;
+  private PermissionRepository permissionRepository;
 
-  public RoleService(ModelMapper modelMapper, RoleRepository roleRepository) {
+  public RoleService(ModelMapper modelMapper, RoleRepository roleRepository,
+      PermissionRepository permissionRepository) {
     this.roleRepository = roleRepository;
     this.modelMapper = modelMapper;
+    this.permissionRepository = permissionRepository;
   }
 
   /**
@@ -50,5 +55,26 @@ public class RoleService {
   public Optional<RoleDetailDTO> findById(Long id) {
     return roleRepository.findById(id)
         .map(role -> modelMapper.map(role, RoleDetailDTO.class));
+  }
+
+  /**
+   * Creates and saves a new {@link Role} entity using the provided
+   * {@link RoleCreateDTO}.
+   * Maps the saved entity to a {@link RoleDetailDTO} and returns it.
+   *
+   * @param roleCreateDTO the data transfer object containing role details and
+   *                      permission IDs
+   * @return the detailed data transfer object of the saved role
+   */
+  public RoleDetailDTO create(RoleCreateDTO roleCreateDTO) {
+    Role role = Role.builder()
+        .name(roleCreateDTO.getName())
+        .title(roleCreateDTO.getTitle())
+        .description(roleCreateDTO.getDescription())
+        .permissions(permissionRepository.findAllById(roleCreateDTO.getPermissionIds()))
+        .build();
+
+    role = roleRepository.save(role);
+    return modelMapper.map(role, RoleDetailDTO.class);
   }
 }

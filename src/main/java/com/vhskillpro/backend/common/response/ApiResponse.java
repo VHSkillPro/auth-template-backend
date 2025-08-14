@@ -26,6 +26,36 @@ public class ApiResponse<T> {
   private String message;
 
   /**
+   * Creates a successful {@link ApiResponse} with the given message and HTTP
+   * status 200 (OK).
+   *
+   * @param message the success message to include in the response
+   * @return an {@code ApiResponse<Void>} indicating success
+   */
+  public static ApiResponse<Void> success(String message) {
+    return ApiResponse.<Void>builder()
+        .success(true)
+        .statusCode(HttpStatus.OK.value())
+        .message(message)
+        .build();
+  }
+
+  /**
+   * Creates an {@link ApiResponse} indicating a successful resource creation.
+   *
+   * @param message the message to include in the response
+   * @return an {@code ApiResponse<Void>} with HTTP status 201 (Created) and the
+   *         provided message
+   */
+  public static ApiResponse<Void> created(String message) {
+    return ApiResponse.<Void>builder()
+        .success(true)
+        .statusCode(HttpStatus.CREATED.value())
+        .message(message)
+        .build();
+  }
+
+  /**
    * Creates an {@link ApiResponse} instance representing a failed response based
    * on the provided {@link AppException}.
    *
