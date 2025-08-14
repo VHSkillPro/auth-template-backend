@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.vhskillpro.backend.common.constants.MessageConstants;
-import com.vhskillpro.backend.common.response.ApiResponse;
+import com.vhskillpro.backend.common.responsev2.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
