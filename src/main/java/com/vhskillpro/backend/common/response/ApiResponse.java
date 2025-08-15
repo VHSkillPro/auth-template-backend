@@ -70,6 +70,21 @@ public class ApiResponse<T> {
   }
 
   /**
+   * Creates an {@link ApiResponse} indicating an unauthorized request.
+   *
+   * @param message the message describing the unauthorized error
+   * @return an {@link ApiResponse} with success set to false, HTTP status code 401 (Unauthorized),
+   *     and the provided message
+   */
+  public static ApiResponse<Void> unauthorized(String message) {
+    return ApiResponse.<Void>builder()
+        .success(false)
+        .statusCode(HttpStatus.UNAUTHORIZED.value())
+        .message(message)
+        .build();
+  }
+
+  /**
    * Creates an {@link ApiResponse} representing an internal server error (HTTP 500).
    *
    * @param message the error message to include in the response

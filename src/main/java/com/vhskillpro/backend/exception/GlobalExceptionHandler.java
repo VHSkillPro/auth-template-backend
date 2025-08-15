@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,6 +46,21 @@ public class GlobalExceptionHandler {
       MethodArgumentNotValidException ex) {
     BadRequestResponse response = BadRequestResponse.from(ex);
     return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.getMessage());
+  }
+
+  /**
+   * Handles {@link InsufficientAuthenticationException} thrown when a user attempts to access a
+   * resource without sufficient authentication. Responds with HTTP 401 Unauthorized status and
+   * returns an {@link ApiResponse} containing the exception message.
+   *
+   * @param ex the {@code InsufficientAuthenticationException} encountered
+   * @return an {@code ApiResponse<Void>} indicating unauthorized access
+   */
+  @ExceptionHandler(InsufficientAuthenticationException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ApiResponse<Void> handleInsufficientAuthenticationException(
+      InsufficientAuthenticationException ex) {
+    return ApiResponse.unauthorized(ex.getMessage());
   }
 
   /**

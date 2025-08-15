@@ -1,6 +1,16 @@
 package com.vhskillpro.backend.modules.user;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {}
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+  /**
+   * Retrieves a user by their email address.
+   *
+   * @param email the email address of the user to find
+   * @return an {@link Optional} containing the found {@link User}, or empty if no user exists with
+   *     the given email
+   */
+  Optional<User> findByEmail(String email);
+}
