@@ -1,6 +1,9 @@
 package com.vhskillpro.backend.modules.user;
 
+import com.vhskillpro.backend.common.response.ApiResponse;
+import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
+import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,7 +11,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,6 +63,17 @@ public class UserV1Controller {
             name = "sort",
             description = "Sorting criteria in the format: property(,asc|desc)",
             example = "name,asc")
+      },
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Users retrieved successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = PagedApiResponseUserDTO.class))),
       })
   @GetMapping
   public PagedApiResponse<UserDTO> index(
@@ -66,4 +82,51 @@ public class UserV1Controller {
     Page<UserDTO> userDTOs = userService.findAll(filter, pageable);
     return PagedApiResponse.success(userDTOs, UserMessages.USER_INDEX_SUCCESS.getMessage());
   }
+
+  /**
+   * Retrieves a user by their unique identifier.
+   *
+   * @param id the unique identifier of the user to retrieve
+   * @return a {@link DataApiResponse} containing the {@link UserDTO} if found
+   * @throws AppException if the user with the specified id is not found
+   */
+  @Operation(
+      summary = "Get user by ID",
+      description = "Retrieves a user by their unique identifier.",
+      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User retrieved successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = DataApiResponseUserDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "User not found",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+      })
+  @GetMapping("/{id}")
+  public DataApiResponse<UserDTO> show(@PathVariable Long id) {
+    UserDTO userDTO =
+        userService
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+    return DataApiResponse.success(userDTO, UserMessages.USER_SHOW_SUCCESS.getMessage());
+  }
+
+  private class PagedApiResponseUserDTO extends PagedApiResponse<UserDTO> {}
+
+  private class DataApiResponseUserDTO extends DataApiResponse<UserDTO> {}
 }

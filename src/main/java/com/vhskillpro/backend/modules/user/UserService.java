@@ -3,6 +3,7 @@ package com.vhskillpro.backend.modules.user;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
 import jakarta.transaction.Transactional;
+import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,5 +41,16 @@ public class UserService {
             UserSpecification.hasSuperuserStatus(filter.getSuperuser()),
             UserSpecification.roleNameContainingIgnoreCase(filter.getRoleName()));
     return userRepository.findAll(spec, pageable).map(user -> modelMapper.map(user, UserDTO.class));
+  }
+
+  /**
+   * Retrieves a user by their unique identifier and maps the entity to a UserDTO.
+   *
+   * @param id the unique identifier of the user to retrieve
+   * @return an {@link Optional} containing the {@link UserDTO} if found, or empty if not found
+   */
+  @Transactional
+  public Optional<UserDTO> findById(Long id) {
+    return userRepository.findById(id).map(user -> modelMapper.map(user, UserDTO.class));
   }
 }
