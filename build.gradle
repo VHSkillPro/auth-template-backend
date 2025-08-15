@@ -40,6 +40,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  implementation 'org.springframework.boot:spring-boot-configuration-processor:4.0.0-M1'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
+
+  // JWT
+  implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+  runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+  runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
 
   // Validation
   implementation 'org.springframework.boot:spring-boot-starter-validation'
