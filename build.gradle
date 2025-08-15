@@ -71,6 +71,17 @@ dependencies {
 
   // Testing
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testImplementation 'org.assertj:assertj-core:3.27.3'
+}
+
+task installGitHooks(type: Copy) {
+  from new File(rootProject.rootDir, 'scripts/pre-commit')
+  into new File(rootProject.rootDir, '.git/hooks')
+  fileMode 0755
+}
+
+tasks.named('build').configure {
+  dependsOn installGitHooks
 }
 
 tasks.named('test') {

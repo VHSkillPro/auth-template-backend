@@ -1,9 +1,6 @@
 package com.vhskillpro.backend.role;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -17,6 +14,7 @@ import com.vhskillpro.backend.modules.role.Role;
 import com.vhskillpro.backend.modules.role.RoleRepository;
 import com.vhskillpro.backend.modules.role.RoleService;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
+import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -43,11 +41,13 @@ public class RoleServiceTests {
   private Instant now;
   private List<Role> roles;
   private List<RoleDTO> roleDTOs;
+  private List<RoleDetailDTO> roleDetailDTOs;
   private List<Permission> permissions;
-  private List<PermissionDTO> permissionDTOs;
 
   @BeforeEach
   void setUp() {
+    // FIXME Fix role service test
+
     now = Instant.now();
 
     permissions =
@@ -69,33 +69,6 @@ public class RoleServiceTests {
                 .updatedAt(now)
                 .build(),
             Permission.builder()
-                .id(3L)
-                .name("role:read")
-                .title("Read role")
-                .description("Allows reading roles")
-                .createdAt(now)
-                .updatedAt(now)
-                .build());
-
-    permissionDTOs =
-        List.of(
-            PermissionDTO.builder()
-                .id(1L)
-                .name("permission:read")
-                .title("Read permissions")
-                .description("Allows reading permissions")
-                .createdAt(now)
-                .updatedAt(now)
-                .build(),
-            PermissionDTO.builder()
-                .id(2L)
-                .name("permission:write")
-                .title("Write permissions")
-                .description("Allows writing permissions")
-                .createdAt(now)
-                .updatedAt(now)
-                .build(),
-            PermissionDTO.builder()
                 .id(3L)
                 .name("role:read")
                 .title("Read role")
@@ -135,34 +108,48 @@ public class RoleServiceTests {
                 .build());
 
     roleDTOs =
-        List.of(
-            RoleDTO.builder()
-                .id(1L)
-                .name("Admin")
-                .title("Administrator")
-                .description("Full access to the system")
-                .permissions(permissionDTOs)
-                .createdAt(now)
-                .updatedAt(now)
-                .build(),
-            RoleDTO.builder()
-                .id(2L)
-                .name("User")
-                .title("Regular User")
-                .description("Limited access to the system")
-                .permissions(List.of(permissionDTOs.get(0), permissionDTOs.get(2)))
-                .createdAt(now)
-                .updatedAt(now)
-                .build(),
-            RoleDTO.builder()
-                .id(3L)
-                .name("Guest")
-                .title("Guest User")
-                .description("Minimal access to the system")
-                .permissions(List.of(permissionDTOs.get(0)))
-                .createdAt(now)
-                .updatedAt(now)
-                .build());
+        roles.stream()
+            .map(
+                role -> {
+                  return RoleDTO.builder()
+                      .id(role.getId())
+                      .name(role.getName())
+                      .title(role.getTitle())
+                      .description(role.getDescription())
+                      .createdAt(role.getCreatedAt())
+                      .updatedAt(role.getUpdatedAt())
+                      .build();
+                })
+            .collect(java.util.stream.Collectors.toList());
+
+    roleDetailDTOs =
+        roles.stream()
+            .map(
+                role -> {
+                  return RoleDetailDTO.builder()
+                      .id(role.getId())
+                      .name(role.getName())
+                      .title(role.getTitle())
+                      .description(role.getDescription())
+                      .createdAt(role.getCreatedAt())
+                      .updatedAt(role.getUpdatedAt())
+                      .permissions(
+                          role.getPermissions().stream()
+                              .map(
+                                  permission -> {
+                                    return PermissionDTO.builder()
+                                        .id(permission.getId())
+                                        .name(permission.getName())
+                                        .title(permission.getTitle())
+                                        .description(permission.getDescription())
+                                        .createdAt(permission.getCreatedAt())
+                                        .updatedAt(permission.getUpdatedAt())
+                                        .build();
+                                  })
+                              .toList())
+                      .build();
+                })
+            .collect(java.util.stream.Collectors.toList());
   }
 
   @Test
@@ -170,25 +157,38 @@ public class RoleServiceTests {
     // Arrange
     String keyword = "e";
     Pageable pageable = PageRequest.of(0, 10);
-    Page<Role> rolePage = new PageImpl<>(List.of(roles.get(1), roles.get(2)), pageable, 2);
+
+    Role role1 = roles.get(1);
+    Role role2 = roles.get(2);
+    RoleDTO roleDTO1 = roleDTOs.get(1);
+    RoleDTO roleDTO2 = roleDTOs.get(2);
+
+    Page<Role> rolePage = new PageImpl<>(List.of(role1, role2), pageable, 2);
 
     when(roleRepository.findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
             eq(keyword), eq(keyword), eq(pageable)))
         .thenReturn(rolePage);
-    when(modelMapper.map(roles.get(1), RoleDTO.class)).thenReturn(roleDTOs.get(1));
-    when(modelMapper.map(roles.get(2), RoleDTO.class)).thenReturn(roleDTOs.get(2));
+
+    when(modelMapper.map(any(Role.class), eq(RoleDTO.class)))
+        .thenAnswer(
+            invocation -> {
+              Role source = invocation.getArgument(0);
+              if (source.getId().equals(role1.getId())) {
+                return roleDTO1;
+              }
+              if (source.getId().equals(role2.getId())) {
+                return roleDTO2;
+              }
+              return null;
+            });
 
     // Act
     Page<RoleDTO> result = roleService.findAll(keyword, pageable);
 
     // Assert
-    assertNotNull(result);
-    assertEquals(2, result.getTotalElements());
-    assertEquals(2, result.getContent().size());
-    assertTrue(result.getContent().contains(roleDTOs.get(1)));
-    assertTrue(result.getContent().contains(roleDTOs.get(2)));
-    assertNull(result.getContent().get(0).getPermissions());
-    assertNull(result.getContent().get(1).getPermissions());
+    assertThat(result).isNotNull();
+    assertThat(result.getTotalElements()).isEqualTo(2);
+    assertThat(result.getContent()).hasSize(2).containsExactlyInAnyOrder(roleDTO1, roleDTO2);
 
     verify(roleRepository)
         .findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
@@ -211,9 +211,9 @@ public class RoleServiceTests {
     Page<RoleDTO> result = roleService.findAll(keyword, pageable);
 
     // Assert
-    assertNotNull(result);
-    assertEquals(0, result.getTotalElements());
-    assertEquals(0, result.getContent().size());
+    assertThat(result).isNotNull();
+    assertThat(result.getTotalElements()).isEqualTo(0);
+    assertThat(result.getContent()).isEmpty();
 
     verify(roleRepository)
         .findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
@@ -231,23 +231,26 @@ public class RoleServiceTests {
     when(roleRepository.findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
             eq(keyword), eq(keyword), eq(pageable)))
         .thenReturn(rolePage);
-    when(modelMapper.map(roles.get(0), RoleDTO.class)).thenReturn(roleDTOs.get(0));
-    when(modelMapper.map(roles.get(1), RoleDTO.class)).thenReturn(roleDTOs.get(1));
-    when(modelMapper.map(roles.get(2), RoleDTO.class)).thenReturn(roleDTOs.get(2));
+
+    when(modelMapper.map(any(Role.class), eq(RoleDTO.class)))
+        .thenAnswer(
+            invocation -> {
+              Role source = invocation.getArgument(0);
+              return roleDTOs.stream()
+                  .filter(dto -> dto.getId().equals(source.getId()))
+                  .findFirst()
+                  .orElse(null);
+            });
 
     // Act
     Page<RoleDTO> result = roleService.findAll(keyword, pageable);
 
     // Assert
-    assertNotNull(result);
-    assertEquals(roles.size(), result.getTotalElements());
-    assertEquals(roles.size(), result.getContent().size());
-    assertTrue(result.getContent().contains(roleDTOs.get(0)));
-    assertTrue(result.getContent().contains(roleDTOs.get(1)));
-    assertTrue(result.getContent().contains(roleDTOs.get(2)));
-    assertNull(result.getContent().get(0).getPermissions());
-    assertNull(result.getContent().get(1).getPermissions());
-    assertNull(result.getContent().get(2).getPermissions());
+    assertThat(result).isNotNull();
+    assertThat(result.getTotalElements()).isEqualTo(roles.size());
+    assertThat(result.getContent())
+        .hasSize(roles.size())
+        .containsExactlyInAnyOrderElementsOf(roleDTOs);
 
     verify(roleRepository)
         .findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
@@ -260,26 +263,26 @@ public class RoleServiceTests {
     // Arrange
     Long roleId = 1L;
     Role role = roles.get(0);
-    RoleDTO roleDTO = roleDTOs.get(0);
+    RoleDetailDTO roleDetailDTO = roleDetailDTOs.get(0);
 
     when(roleRepository.findById(roleId)).thenReturn(Optional.of(role));
-    when(modelMapper.map(role, RoleDTO.class)).thenReturn(roleDTO);
+    when(modelMapper.map(role, RoleDetailDTO.class)).thenReturn(roleDetailDTO);
 
     // Act
-    Optional<RoleDTO> result = roleService.findById(roleId);
+    Optional<RoleDetailDTO> result = roleService.findById(roleId);
 
     // Assert
-    assertTrue(result.isPresent());
-    assertEquals(roleId, result.get().getId());
-    assertEquals(role.getName(), result.get().getName());
-    assertEquals(role.getTitle(), result.get().getTitle());
-    assertEquals(role.getDescription(), result.get().getDescription());
-    assertEquals(role.getCreatedAt(), result.get().getCreatedAt());
-    assertEquals(role.getUpdatedAt(), result.get().getUpdatedAt());
-    assertNotNull(result.get().getPermissions());
+    assertThat(result).isPresent();
+    assertThat(result.get().getId()).isEqualTo(roleId);
+    assertThat(result.get().getName()).isEqualTo(role.getName());
+    assertThat(result.get().getTitle()).isEqualTo(role.getTitle());
+    assertThat(result.get().getDescription()).isEqualTo(role.getDescription());
+    assertThat(result.get().getCreatedAt()).isEqualTo(role.getCreatedAt());
+    assertThat(result.get().getUpdatedAt()).isEqualTo(role.getUpdatedAt());
+    assertThat(result.get().getPermissions()).isNotNull();
 
     verify(roleRepository).findById(roleId);
-    verify(modelMapper).map(role, RoleDTO.class);
+    verify(modelMapper).map(role, RoleDetailDTO.class);
   }
 
   @Test
@@ -290,10 +293,10 @@ public class RoleServiceTests {
     when(roleRepository.findById(roleId)).thenReturn(Optional.empty());
 
     // Act
-    Optional<RoleDTO> result = roleService.findById(roleId);
+    Optional<RoleDetailDTO> result = roleService.findById(roleId);
 
     // Assert
-    assertTrue(result.isEmpty());
+    assertThat(result).isNotPresent();
 
     verify(roleRepository).findById(roleId);
     verifyNoInteractions(modelMapper);

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "Running Spotless format check..."
+
+# Chạy spotlessApply để format code
+./gradlew spotlessApply
+
+# Lấy danh sách các file đã được staged
+staged_files=$(git diff --staged --name-only)
+
+# Thêm lại các file đã được format vào staging area
+if [ -n "$staged_files" ]; then
+    echo "Adding formatted files to the commit..."
+    git add $staged_files
+fi
+
+exit 0
