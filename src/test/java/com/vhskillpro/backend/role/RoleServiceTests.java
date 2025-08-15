@@ -46,8 +46,6 @@ public class RoleServiceTests {
 
   @BeforeEach
   void setUp() {
-    // FIXME Fix role service test
-
     now = Instant.now();
 
     permissions =
