@@ -25,6 +25,38 @@ public class AuthV1Controller {
     this.authService = authService;
   }
 
+  /**
+   * Handles user sign-in requests.
+   *
+   * <p>Accepts user credentials via a {@link SignInDTO} object, authenticates the user, and returns
+   * a JWT token wrapped in a {@link DataApiResponse} if authentication is successful.
+   *
+   * @param signInDTO the sign-in request payload containing user credentials
+   * @return a {@link DataApiResponse} containing the authentication token and a success message
+   */
+  @Operation(
+      summary = "Sign In",
+      description = "Authenticates a user and returns a JWT token.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User signed in successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = DataApiResponseTokenDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Bad request, e.g., invalid credentials",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
   @PostMapping("/sign-in")
   public DataApiResponse<TokenDTO> signIn(@Valid @RequestBody SignInDTO signInDTO) {
     TokenDTO token = authService.signIn(signInDTO);
@@ -90,4 +122,6 @@ public class AuthV1Controller {
     authService.verifyEmail(token);
     return ApiResponse.success(AuthMessages.EMAIL_VERIFICATION_SUCCESS.getMessage());
   }
+
+  private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}
 }

@@ -44,6 +44,18 @@ public class AuthService {
     this.userRepository = userRepository;
   }
 
+  /**
+   * Authenticates a user based on the provided sign-in credentials.
+   *
+   * <p>If authentication fails at any step, an {@link AppException} is thrown with an appropriate
+   * HTTP status and message.
+   *
+   * @param signInDTO the data transfer object containing the user's email and password
+   * @return a {@link TokenDTO} containing the generated access and refresh tokens along with their
+   *     expiration times
+   * @throws AppException if the user does not exist, is not enabled, is locked, or if the password
+   *     is invalid
+   */
   @Transactional
   public TokenDTO signIn(SignInDTO signInDTO) {
     // Check if user exists
