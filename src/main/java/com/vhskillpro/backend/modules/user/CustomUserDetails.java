@@ -16,6 +16,8 @@ public class CustomUserDetails implements UserDetails {
   private boolean enabled;
   private boolean locked;
   private boolean superuser;
+  private Long roleId;
+  private String verificationToken;
   private List<GrantedAuthority> authorities;
 
   public String getUsername() {

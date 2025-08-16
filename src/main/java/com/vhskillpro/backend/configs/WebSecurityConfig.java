@@ -37,14 +37,17 @@ public class WebSecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
+  private static final String[] WHITELIST_URLS = {
+    "/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**"
+  };
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/api/v1/auth/**").permitAll().anyRequest().authenticated())
+            auth -> auth.requestMatchers(WHITELIST_URLS).permitAll().anyRequest().authenticated())
         .exceptionHandling(
             exceptions ->
                 exceptions

@@ -88,6 +88,8 @@ public class UserService implements UserDetailsService {
             .enabled(user.isEnabled())
             .locked(user.isLocked())
             .superuser(user.isSuperuser())
+            .roleId(user.getRole() != null ? user.getRole().getId() : null)
+            .verificationToken(user.getVerificationToken())
             .build();
 
     if (user.getRole() != null && !user.isSuperuser()) {
@@ -99,5 +101,28 @@ public class UserService implements UserDetailsService {
     }
 
     return userDetails;
+  }
+
+  /**
+   * Updates the verification token for a user with the specified user ID.
+   *
+   * <p>Retrieves the user from the repository, sets the new verification token, saves the updated
+   * user entity, and returns a mapped {@link UserDTO}.
+   *
+   * @param userId the ID of the user whose verification token is to be updated
+   * @param token the new verification token to set
+   * @return the updated user as a {@link UserDTO}
+   * @throws UsernameNotFoundException if the user with the given ID is not found
+   */
+  @Transactional
+  public UserDTO updateVerificationToken(Long userId, String token) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> new UsernameNotFoundException(UserMessages.USER_NOT_FOUND.getMessage()));
+    user.setVerificationToken(token);
+    User updatedUser = userRepository.save(user);
+    return modelMapper.map(updatedUser, UserDTO.class);
   }
 }
