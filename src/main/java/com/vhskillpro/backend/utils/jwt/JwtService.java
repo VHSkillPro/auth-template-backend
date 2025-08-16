@@ -145,7 +145,7 @@ public class JwtService {
    * @return the claims contained in the token's payload
    * @throws io.jsonwebtoken.JwtException if the token is invalid or cannot be parsed
    */
-  private Claims getPayload(String token) {
+  public Claims getPayload(String token) {
     return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
   }
 

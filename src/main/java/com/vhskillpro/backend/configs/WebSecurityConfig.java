@@ -2,6 +2,7 @@ package com.vhskillpro.backend.configs;
 
 import com.vhskillpro.backend.exception.CustomAccessDeniedHandler;
 import com.vhskillpro.backend.exception.CustomAuthenticationEntryPoint;
+import com.vhskillpro.backend.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,16 +11,20 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-  private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  private CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final JwtAuthenticationFilter jwtAuthFilter;
+  private final CustomAccessDeniedHandler customAccessDeniedHandler;
+  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
   public WebSecurityConfig(
-      CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-      CustomAccessDeniedHandler customAccessDeniedHandler) {
+      JwtAuthenticationFilter jwtAuthFilter,
+      CustomAccessDeniedHandler customAccessDeniedHandler,
+      CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
+    this.jwtAuthFilter = jwtAuthFilter;
     this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     this.customAccessDeniedHandler = customAccessDeniedHandler;
   }
@@ -37,6 +42,10 @@ public class WebSecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
+  /**
+   * An array of URL patterns that are excluded from authentication checks. These endpoints are
+   * publicly accessible and do not require authentication.
+   */
   private static final String[] WHITELIST_URLS = {
     "/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**"
   };
@@ -52,7 +61,8 @@ public class WebSecurityConfig {
             exceptions ->
                 exceptions
                     .authenticationEntryPoint(customAuthenticationEntryPoint)
-                    .accessDeniedHandler(customAccessDeniedHandler));
+                    .accessDeniedHandler(customAccessDeniedHandler))
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }
