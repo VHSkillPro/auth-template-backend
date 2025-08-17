@@ -15,12 +15,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -204,6 +206,28 @@ public class UserV1Controller {
       @PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
     userService.update(id, userUpdateDTO);
     return ApiResponse.success(UserMessages.USER_UPDATE_SUCCESS.getMessage());
+  }
+
+  @Operation(
+      summary = "Delete user by ID",
+      description = "Deletes the user with the specified ID.",
+      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User deleted successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+      })
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public ApiResponse<Void> delete(@PathVariable Long id) {
+    userService.delete(id);
+    return ApiResponse.success(UserMessages.USER_DELETE_SUCCESS.getMessage());
   }
 
   private class PagedApiResponseUserDTO extends PagedApiResponse<UserDTO> {}

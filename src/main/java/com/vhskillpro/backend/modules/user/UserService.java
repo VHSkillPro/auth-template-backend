@@ -144,6 +144,26 @@ public class UserService implements UserDetailsService {
   }
 
   /**
+   * Deletes a user by their unique identifier.
+   *
+   * <p>This method checks if the user exists before attempting deletion. If the user does not
+   * exist, an {@link AppException} is thrown with a 404 NOT FOUND status. Only users with 'all:all'
+   * or 'user:delete' authority can perform this operation. The operation is transactional.
+   *
+   * @param userId the unique identifier of the user to delete
+   * @throws AppException if the user does not exist
+   */
+  @PreAuthorize("hasAnyAuthority('all:all', 'user:delete')")
+  @Transactional
+  public void delete(Long userId) {
+    if (!userRepository.existsById(userId)) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
+    }
+
+    userRepository.deleteById(userId);
+  }
+
+  /**
    * Loads a user's details by their username (email).
    *
    * <p>Retrieves the user from the repository using the provided email. If the user is not found,
