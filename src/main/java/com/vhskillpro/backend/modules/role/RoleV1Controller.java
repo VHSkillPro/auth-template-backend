@@ -223,6 +223,13 @@ public class RoleV1Controller {
             content =
                 @Content(
                     mediaType = "application/json",
+                    schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Role delete conflict",
+            content =
+                @Content(
+                    mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
   @DeleteMapping("/{id}")
