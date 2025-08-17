@@ -21,4 +21,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
    * @return true if a user with the given email exists, false otherwise
    */
   public boolean existsByEmail(String email);
+
+  /**
+   * Checks if any user exists with the specified role ID.
+   *
+   * @param roleId the ID of the role to check for existence
+   * @return true if a user with the given role ID exists, false otherwise
+   */
+  public boolean existsByRoleId(Long roleId);
 }

@@ -7,6 +7,7 @@ import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
+import com.vhskillpro.backend.modules.user.dto.UserUpdateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -130,10 +132,78 @@ public class UserV1Controller {
     return DataApiResponse.success(userDTO, UserMessages.USER_SHOW_SUCCESS.getMessage());
   }
 
+  /**
+   * Creates a new user with the provided details.
+   *
+   * @param userCreateDTO the data transfer object containing user creation information; must be
+   *     valid
+   * @return an ApiResponse indicating the success of the user creation operation
+   */
+  @Operation(
+      summary = "Create a new user",
+      description = "Creates a new user with the provided details.",
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "User creation details",
+              content =
+                  @io.swagger.v3.oas.annotations.media.Content(
+                      mediaType = "application/json",
+                      schema =
+                          @io.swagger.v3.oas.annotations.media.Schema(
+                              implementation = UserCreateDTO.class))),
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "User created successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+      })
   @PostMapping()
   public ApiResponse<Void> create(@Valid @RequestBody UserCreateDTO userCreateDTO) {
     userService.create(userCreateDTO);
     return ApiResponse.success(UserMessages.USER_CREATE_SUCCESS.getMessage());
+  }
+
+  /**
+   * Updates the user information for the specified user ID.
+   *
+   * @param id the ID of the user to update
+   * @param userUpdateDTO the data transfer object containing updated user information
+   * @return an {@link ApiResponse} indicating the success of the update operation
+   */
+  @Operation(
+      summary = "Update user by ID",
+      description = "Updates the user information for the specified user ID.",
+      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "User update details",
+              content =
+                  @io.swagger.v3.oas.annotations.media.Content(
+                      mediaType = "application/json",
+                      schema =
+                          @io.swagger.v3.oas.annotations.media.Schema(
+                              implementation = UserUpdateDTO.class))),
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User updated successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PutMapping("/{id}")
+  public ApiResponse<Void> update(
+      @PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+    userService.update(id, userUpdateDTO);
+    return ApiResponse.success(UserMessages.USER_UPDATE_SUCCESS.getMessage());
   }
 
   private class PagedApiResponseUserDTO extends PagedApiResponse<UserDTO> {}

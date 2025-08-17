@@ -6,6 +6,7 @@ public enum RoleMessages {
   ROLE_CREATE_SUCCESS("Role created successfully"),
   ROLE_UPDATE_SUCCESS("Role updated successfully"),
   ROLE_DELETE_SUCCESS("Role deleted successfully"),
+  ROLE_DELETE_CONFLICT("Role has associated users and cannot be deleted"),
   ROLE_NOT_FOUND("Role not found");
 
   private String message;

@@ -1,8 +1,11 @@
 package com.vhskillpro.backend.modules.user;
 
+import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.role.RoleRepository;
 import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
+import com.vhskillpro.backend.modules.user.dto.UserUpdateDTO;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,14 +28,17 @@ import org.springframework.stereotype.Service;
 public class UserService implements UserDetailsService {
   private final ModelMapper modelMapper;
   private final UserRepository userRepository;
+  private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
 
   public UserService(
-      UserRepository userRepository,
       ModelMapper modelMapper,
+      UserRepository userRepository,
+      RoleRepository roleRepository,
       @Lazy PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.modelMapper = modelMapper;
+    this.roleRepository = roleRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
@@ -96,6 +103,44 @@ public class UserService implements UserDetailsService {
     User savedUser = userRepository.save(user);
 
     return modelMapper.map(savedUser, UserDTO.class);
+  }
+
+  /**
+   * Updates the details of an existing user identified by the given userId.
+   *
+   * @param userId the ID of the user to update
+   * @param userUpdateDTO the DTO containing updated user information
+   * @return the updated user as a UserDTO
+   * @throws AppException if the user with the given ID is not found
+   */
+  @PreAuthorize("hasAnyAuthority('all:all', 'user:update')")
+  @Transactional
+  public UserDTO update(Long userId, UserUpdateDTO userUpdateDTO) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+
+    // Assign updated values
+    if (userUpdateDTO.getPassword() != null) {
+      user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
+    }
+
+    user.setFirstName(userUpdateDTO.getFirstName());
+    user.setLastName(userUpdateDTO.getLastName());
+    user.setLocked(userUpdateDTO.getLocked());
+    user.setRole(
+        userUpdateDTO.getRoleId() != null
+            ? roleRepository.getReferenceById(userUpdateDTO.getRoleId())
+            : null);
+
+    // Save updated user
+    User updatedUser = userRepository.save(user);
+
+    return modelMapper.map(updatedUser, UserDTO.class);
   }
 
   /**

@@ -6,6 +6,7 @@ import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDetailDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleUpdateDTO;
+import com.vhskillpro.backend.modules.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
 import org.modelmapper.ModelMapper;
@@ -19,14 +20,17 @@ import org.springframework.stereotype.Service;
 public class RoleService {
   private ModelMapper modelMapper;
   private RoleRepository roleRepository;
+  private UserRepository userRepository;
   private PermissionRepository permissionRepository;
 
   public RoleService(
       ModelMapper modelMapper,
       RoleRepository roleRepository,
+      UserRepository userRepository,
       PermissionRepository permissionRepository) {
     this.roleRepository = roleRepository;
     this.modelMapper = modelMapper;
+    this.userRepository = userRepository;
     this.permissionRepository = permissionRepository;
   }
 
@@ -124,11 +128,16 @@ public class RoleService {
    */
   @PreAuthorize("hasAnyAuthority('all:all', 'role:delete')")
   @Transactional
-  public boolean delete(Long roleId) {
+  public void delete(Long roleId) {
     if (!roleRepository.existsById(roleId)) {
       throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage());
     }
+
+    // Check if the role is associated with any users
+    if (userRepository.existsByRoleId(roleId)) {
+      throw new AppException(HttpStatus.CONFLICT, RoleMessages.ROLE_DELETE_CONFLICT.getMessage());
+    }
+
     roleRepository.deleteById(roleId);
-    return true;
   }
 }
