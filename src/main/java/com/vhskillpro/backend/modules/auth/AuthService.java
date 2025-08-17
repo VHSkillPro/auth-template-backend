@@ -16,6 +16,7 @@ import com.vhskillpro.backend.utils.jwt.claims.RefreshTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -114,26 +115,27 @@ public class AuthService {
    * @throws AppException if the user is not found, already enabled, a token was already sent, or
    *     email sending fails
    */
-  public boolean sendVerificationEmail(String email) {
+  @Transactional
+  public void sendVerificationEmail(String email) {
     // Check if user exists
-    CustomUserDetails userDetails;
-    try {
-      userDetails = userService.loadUserByUsername(email);
-    } catch (UsernameNotFoundException ex) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
-    } catch (Exception ex) {
-      throw ex;
-    }
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
 
     // Check if user is already enabled
-    if (userDetails.isEnabled()) {
+    if (user.isEnabled()) {
       throw new AppException(
           HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.getMessage());
     }
 
     // Check if verification token already exists
-    String oldToken = userDetails.getVerificationToken();
-    if (oldToken != null && jwtService.isValidToken(oldToken, userDetails)) {
+    String oldToken = user.getVerificationToken();
+    if (!jwtService.isValidToken(oldToken)
+        || Long.valueOf(jwtService.getSubject(oldToken)) != user.getId()) {
       throw new AppException(
           HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_ALREADY_SENT.getMessage());
     }
@@ -141,19 +143,19 @@ public class AuthService {
     // Generate verification token
     VerificationTokenExtraClaims extraClaims =
         VerificationTokenExtraClaims.builder().email(email).build();
-    String token = jwtService.generateToken(extraClaims, userDetails);
+    String token = jwtService.generateToken(extraClaims, user.getId());
 
     // Send verification email
-    boolean isSend = emailService.sendVerificationEmail(userDetails.getEmail(), token);
-    if (!isSend) {
+    try {
+      emailService.sendVerificationEmail(user.getEmail(), token);
+    } catch (MailException e) {
       throw new AppException(
           HttpStatus.INTERNAL_SERVER_ERROR, AuthMessages.EMAIL_SENDING_FAILED.getMessage());
     }
 
     // Save token
-    userService.updateVerificationToken(userDetails.getId(), token);
-
-    return isSend;
+    user.setVerificationToken(token);
+    userRepository.save(user);
   }
 
   /**
@@ -195,5 +197,6 @@ public class AuthService {
     // Enable the user and clear the verification token
     user.setEnabled(true);
     user.setVerificationToken(null);
+    userRepository.save(user);
   }
 }

@@ -74,6 +74,46 @@ public class JwtService {
   }
 
   /**
+   * Generates a JWT token based on the provided extra claims and user ID. The expiration time of
+   * the token is determined by the type of extra claims.
+   *
+   * @param extraClaims the extra claims to include in the token, which also determine the token
+   *     type
+   * @param userId the ID of the user for whom the token is generated
+   * @return a signed JWT token as a String
+   * @throws IllegalArgumentException if the token type is unsupported
+   */
+  public String generateToken(TokenExtraClaims extraClaims, Long userId) {
+    // Get expiration time depend on token type
+    Long expirationTime = 0L;
+    switch (extraClaims) {
+      case AccessTokenExtraClaims _ -> {
+        expirationTime = jwtProperties.getAccessTokenExpiration();
+      }
+      case RefreshTokenExtraClaims _ -> {
+        expirationTime = jwtProperties.getRefreshTokenExpiration();
+      }
+      case ResetPasswordTokenExtraClaims _ -> {
+        expirationTime = jwtProperties.getResetPasswordTokenExpiration();
+      }
+      case VerificationTokenExtraClaims _ -> {
+        expirationTime = jwtProperties.getVerificationTokenExpiration();
+      }
+      default -> throw new IllegalArgumentException("Unsupported token type");
+    }
+
+    // Build the JWT token
+    return Jwts.builder()
+        .claims(extraClaims.toMap())
+        .subject(userId.toString())
+        .issuedAt(new Date(System.currentTimeMillis()))
+        .expiration(new Date(System.currentTimeMillis() + expirationTime * 1000))
+        .id(UUID.randomUUID().toString())
+        .signWith(getSignInKey())
+        .compact();
+  }
+
+  /**
    * Extracts the subject (typically the user's identifier) from the given JWT token.
    *
    * @param token the JWT token from which to extract the subject
