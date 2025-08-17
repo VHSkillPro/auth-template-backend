@@ -3,11 +3,9 @@ package com.vhskillpro.backend.modules.auth;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
-import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.User;
 import com.vhskillpro.backend.modules.user.UserMessages;
 import com.vhskillpro.backend.modules.user.UserRepository;
-import com.vhskillpro.backend.modules.user.UserService;
 import com.vhskillpro.backend.utils.email.EmailService;
 import com.vhskillpro.backend.utils.jwt.JwtProperties;
 import com.vhskillpro.backend.utils.jwt.JwtService;
@@ -17,13 +15,11 @@ import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
-  private final UserService userService;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtProperties jwtProperties;
@@ -31,13 +27,11 @@ public class AuthService {
   private final EmailService emailService;
 
   AuthService(
-      UserService userService,
       PasswordEncoder passwordEncoder,
       JwtProperties jwtProperties,
       JwtService jwtService,
       EmailService emailService,
       UserRepository userRepository) {
-    this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.jwtProperties = jwtProperties;
     this.jwtService = jwtService;
@@ -60,28 +54,27 @@ public class AuthService {
   @Transactional
   public TokenDTO signIn(SignInDTO signInDTO) {
     // Check if user exists
-    CustomUserDetails userDetails;
-    try {
-      userDetails = userService.loadUserByUsername(signInDTO.getEmail());
-    } catch (UsernameNotFoundException ex) {
-      throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.EMAIL_OR_PASSWORD_INVALID.getMessage());
-    } catch (Exception ex) {
-      throw ex;
-    }
+    User user =
+        userRepository
+            .findByEmail(signInDTO.getEmail())
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.UNAUTHORIZED,
+                        AuthMessages.EMAIL_OR_PASSWORD_INVALID.getMessage()));
 
     // If user is not enabled
-    if (!userDetails.isEnabled()) {
+    if (!user.isEnabled()) {
       throw new AppException(HttpStatus.UNAUTHORIZED, AuthMessages.USER_NOT_ENABLED.getMessage());
     }
 
     // If user is locked
-    if (userDetails.isLocked()) {
+    if (user.isLocked()) {
       throw new AppException(HttpStatus.UNAUTHORIZED, AuthMessages.USER_LOCKED.getMessage());
     }
 
     // Check if the password matches
-    if (!passwordEncoder.matches(signInDTO.getPassword(), userDetails.getPassword())) {
+    if (!passwordEncoder.matches(signInDTO.getPassword(), user.getPassword())) {
       throw new AppException(
           HttpStatus.UNAUTHORIZED, AuthMessages.EMAIL_OR_PASSWORD_INVALID.getMessage());
     }
@@ -89,16 +82,16 @@ public class AuthService {
     // Generate JWT token
     AccessTokenExtraClaims accessTokenExtraClaims =
         AccessTokenExtraClaims.builder()
-            .email(userDetails.getEmail())
-            .roleId(userDetails.getRoleId())
-            .superuser(userDetails.isSuperuser())
+            .email(user.getEmail())
+            .roleId(user.getRole() != null ? user.getRole().getId() : null)
+            .superuser(user.isSuperuser())
             .build();
     RefreshTokenExtraClaims refreshTokenExtraClaims = RefreshTokenExtraClaims.builder().build();
 
     TokenDTO tokenDTO =
         TokenDTO.builder()
-            .accessToken(jwtService.generateToken(accessTokenExtraClaims, userDetails))
-            .refreshToken(jwtService.generateToken(refreshTokenExtraClaims, userDetails))
+            .accessToken(jwtService.generateToken(accessTokenExtraClaims, user.getId()))
+            .refreshToken(jwtService.generateToken(refreshTokenExtraClaims, user.getId()))
             .accessTokenExpiration(jwtProperties.getAccessTokenExpiration())
             .refreshTokenExpiration(jwtProperties.getRefreshTokenExpiration())
             .build();
