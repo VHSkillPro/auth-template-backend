@@ -1,0 +1,2 @@
+ALTER TABLE tbl_user
+ADD COLUMN jti VARCHAR(255);

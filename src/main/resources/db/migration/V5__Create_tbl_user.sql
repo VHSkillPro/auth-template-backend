@@ -1,0 +1,16 @@
+-- Create tbl_user 
+CREATE TABLE tbl_user (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  enabled BOOLEAN DEFAULT FALSE,
+  locked BOOLEAN DEFAULT FALSE,
+  superuser BOOLEAN DEFAULT FALSE,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  avatar_url TEXT,
+  role_id BIGINT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (role_id) REFERENCES tbl_role(id) ON DELETE RESTRICT
+);

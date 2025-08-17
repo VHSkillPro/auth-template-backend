@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +26,7 @@ public class PermissionService {
    * @param pageable the pagination and sorting information
    * @return a page of PermissionDTO objects matching the search criteria
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'permission:read')")
   public Page<PermissionDTO> findAll(String keyword, Pageable pageable) {
     Page<Permission> permissions =
         permissionRepository.findByNameContainingIgnoreCaseAndTitleContainingIgnoreCase(
@@ -39,6 +41,7 @@ public class PermissionService {
    * @return an {@link Optional} containing the mapped {@link PermissionDTO} if found, or an empty
    *     {@link Optional} if not found
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'permission:read')")
   public Optional<PermissionDTO> findById(Long id) {
     return permissionRepository
         .findById(id)
