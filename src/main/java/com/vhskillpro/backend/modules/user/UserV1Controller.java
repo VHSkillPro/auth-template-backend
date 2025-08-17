@@ -4,16 +4,20 @@ import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -124,6 +128,12 @@ public class UserV1Controller {
                     new AppException(
                         HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
     return DataApiResponse.success(userDTO, UserMessages.USER_SHOW_SUCCESS.getMessage());
+  }
+
+  @PostMapping()
+  public ApiResponse<Void> create(@Valid @RequestBody UserCreateDTO userCreateDTO) {
+    userService.create(userCreateDTO);
+    return ApiResponse.success(UserMessages.USER_CREATE_SUCCESS.getMessage());
   }
 
   private class PagedApiResponseUserDTO extends PagedApiResponse<UserDTO> {}

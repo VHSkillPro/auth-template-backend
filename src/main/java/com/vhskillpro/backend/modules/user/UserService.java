@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -45,6 +46,7 @@ public class UserService implements UserDetailsService {
    * @param pageable the pagination information
    * @return a page of {@link UserDTO} objects matching the filter criteria
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'user:read')")
   @Transactional
   public Page<UserDTO> findAll(UserFilterDTO filter, Pageable pageable) {
     Specification<User> spec =
@@ -63,6 +65,7 @@ public class UserService implements UserDetailsService {
    * @param id the unique identifier of the user to retrieve
    * @return an {@link Optional} containing the {@link UserDTO} if found, or empty if not found
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'user:read')")
   @Transactional
   public Optional<UserDTO> findById(Long id) {
     return userRepository.findById(id).map(user -> modelMapper.map(user, UserDTO.class));
@@ -74,6 +77,7 @@ public class UserService implements UserDetailsService {
    * @param userCreateDTO the DTO containing user creation details
    * @return the created user mapped to {@link UserDTO}
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'user:create')")
   @Transactional
   public UserDTO create(UserCreateDTO userCreateDTO) {
     // Create user

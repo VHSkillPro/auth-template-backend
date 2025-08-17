@@ -85,6 +85,21 @@ public class ApiResponse<T> {
   }
 
   /**
+   * Creates an {@link ApiResponse} representing a forbidden (HTTP 403) response.
+   *
+   * @param message the message to include in the response
+   * @return an {@link ApiResponse} with success set to false, status code 403, and the provided
+   *     message
+   */
+  public static ApiResponse<Void> forbidden(String message) {
+    return ApiResponse.<Void>builder()
+        .success(false)
+        .statusCode(HttpStatus.FORBIDDEN.value())
+        .message(message)
+        .build();
+  }
+
+  /**
    * Creates an {@link ApiResponse} representing an internal server error (HTTP 500).
    *
    * @param message the error message to include in the response

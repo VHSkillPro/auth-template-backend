@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,6 +39,7 @@ public class RoleService {
    * @param pageable the pagination information
    * @return a page of RoleDTO objects matching the search criteria
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'role:read')")
   @Transactional
   public Page<RoleDTO> findAll(String keyword, Pageable pageable) {
     return roleRepository
@@ -52,6 +54,7 @@ public class RoleService {
    * @return an {@link Optional} containing the mapped {@link RoleDetailDTO} if found, or an empty
    *     Optional if not found
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'role:read')")
   @Transactional
   public Optional<RoleDetailDTO> findById(Long id) {
     return roleRepository.findById(id).map(role -> modelMapper.map(role, RoleDetailDTO.class));
@@ -64,6 +67,7 @@ public class RoleService {
    * @param roleCreateDTO the data transfer object containing role details and permission IDs
    * @return the detailed data transfer object of the saved role
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'role:create')")
   @Transactional
   public RoleDetailDTO create(RoleCreateDTO roleCreateDTO) {
     Role role =
@@ -89,6 +93,7 @@ public class RoleService {
    * @return the updated role details as a {@link RoleDetailDTO}
    * @throws AppException if the role with the specified ID is not found
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'role:update')")
   @Transactional
   public RoleDetailDTO update(Long id, RoleUpdateDTO roleUpdateDTO) {
     Role role =
@@ -117,6 +122,7 @@ public class RoleService {
    * @return {@code true} if the role was successfully deleted
    * @throws AppException if the role with the specified ID does not exist
    */
+  @PreAuthorize("hasAnyAuthority('all:all', 'role:delete')")
   @Transactional
   public boolean delete(Long roleId) {
     if (!roleRepository.existsById(roleId)) {

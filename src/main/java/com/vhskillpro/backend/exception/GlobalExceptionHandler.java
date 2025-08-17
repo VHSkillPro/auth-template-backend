@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -61,6 +62,20 @@ public class GlobalExceptionHandler {
   public ApiResponse<Void> handleInsufficientAuthenticationException(
       InsufficientAuthenticationException ex) {
     return ApiResponse.unauthorized(ex.getMessage());
+  }
+
+  /**
+   * Handles {@link AuthorizationDeniedException} thrown when a user is denied authorization.
+   * Responds with HTTP 403 Forbidden status and returns an {@link ApiResponse} containing the
+   * exception message.
+   *
+   * @param ex the {@link AuthorizationDeniedException} instance
+   * @return an {@link ApiResponse} with forbidden status and the exception message
+   */
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ApiResponse<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+    return ApiResponse.forbidden(ex.getMessage());
   }
 
   /**
