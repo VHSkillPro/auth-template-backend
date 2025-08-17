@@ -1,5 +1,6 @@
 package com.vhskillpro.backend.modules.user;
 
+import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.modules.user.dto.UserFilterDTO;
 import jakarta.transaction.Transactional;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,16 +16,22 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService implements UserDetailsService {
   private final ModelMapper modelMapper;
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
-  public UserService(UserRepository userRepository, ModelMapper modelMapper) {
+  public UserService(
+      UserRepository userRepository,
+      ModelMapper modelMapper,
+      @Lazy PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.modelMapper = modelMapper;
+    this.passwordEncoder = passwordEncoder;
   }
 
   /**
@@ -61,6 +69,32 @@ public class UserService implements UserDetailsService {
   }
 
   /**
+   * Creates a new user with the provided details.
+   *
+   * @param userCreateDTO the DTO containing user creation details
+   * @return the created user mapped to {@link UserDTO}
+   */
+  @Transactional
+  public UserDTO create(UserCreateDTO userCreateDTO) {
+    // Create user
+    User user =
+        User.builder()
+            .email(userCreateDTO.getEmail())
+            .password(passwordEncoder.encode(userCreateDTO.getPassword()))
+            .firstName(userCreateDTO.getFirstName())
+            .lastName(userCreateDTO.getLastName())
+            .enabled(false)
+            .locked(false)
+            .superuser(false)
+            .build();
+
+    // Save user
+    User savedUser = userRepository.save(user);
+
+    return modelMapper.map(savedUser, UserDTO.class);
+  }
+
+  /**
    * Loads a user's details by their username (email).
    *
    * <p>Retrieves the user from the repository using the provided email. If the user is not found,
@@ -72,6 +106,7 @@ public class UserService implements UserDetailsService {
    * @return a {@link CustomUserDetails} object containing the user's details
    * @throws UsernameNotFoundException if no user is found with the given email
    */
+  @Override
   @Transactional
   public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user =
@@ -101,28 +136,5 @@ public class UserService implements UserDetailsService {
     }
 
     return userDetails;
-  }
-
-  /**
-   * Updates the verification token for a user with the specified user ID.
-   *
-   * <p>Retrieves the user from the repository, sets the new verification token, saves the updated
-   * user entity, and returns a mapped {@link UserDTO}.
-   *
-   * @param userId the ID of the user whose verification token is to be updated
-   * @param token the new verification token to set
-   * @return the updated user as a {@link UserDTO}
-   * @throws UsernameNotFoundException if the user with the given ID is not found
-   */
-  @Transactional
-  public UserDTO updateVerificationToken(Long userId, String token) {
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(
-                () -> new UsernameNotFoundException(UserMessages.USER_NOT_FOUND.getMessage()));
-    user.setVerificationToken(token);
-    User updatedUser = userRepository.save(user);
-    return modelMapper.map(updatedUser, UserDTO.class);
   }
 }

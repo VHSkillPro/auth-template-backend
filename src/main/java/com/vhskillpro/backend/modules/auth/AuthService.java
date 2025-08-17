@@ -134,8 +134,8 @@ public class AuthService {
 
     // Check if verification token already exists
     String oldToken = user.getVerificationToken();
-    if (!jwtService.isValidToken(oldToken)
-        || Long.valueOf(jwtService.getSubject(oldToken)) != user.getId()) {
+    if (jwtService.isValidToken(oldToken)
+        && Long.valueOf(jwtService.getSubject(oldToken)) == user.getId()) {
       throw new AppException(
           HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_ALREADY_SENT.getMessage());
     }
