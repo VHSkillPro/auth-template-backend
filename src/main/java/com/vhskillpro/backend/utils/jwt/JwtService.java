@@ -45,22 +45,7 @@ public class JwtService {
    */
   public String generateToken(TokenExtraClaims extraClaims, CustomUserDetails userDetails) {
     // Get expiration time depend on token type
-    Long expirationTime = 0L;
-    switch (extraClaims) {
-      case AccessTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getAccessTokenExpiration();
-      }
-      case RefreshTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getRefreshTokenExpiration();
-      }
-      case ResetPasswordTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getResetPasswordTokenExpiration();
-      }
-      case VerificationTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getVerificationTokenExpiration();
-      }
-      default -> throw new IllegalArgumentException("Unsupported token type");
-    }
+    Long expirationTime = getExpirationTime(extraClaims);
 
     // Build the JWT token
     return Jwts.builder()
@@ -85,22 +70,7 @@ public class JwtService {
    */
   public String generateToken(TokenExtraClaims extraClaims, Long userId) {
     // Get expiration time depend on token type
-    Long expirationTime = 0L;
-    switch (extraClaims) {
-      case AccessTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getAccessTokenExpiration();
-      }
-      case RefreshTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getRefreshTokenExpiration();
-      }
-      case ResetPasswordTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getResetPasswordTokenExpiration();
-      }
-      case VerificationTokenExtraClaims _ -> {
-        expirationTime = jwtProperties.getVerificationTokenExpiration();
-      }
-      default -> throw new IllegalArgumentException("Unsupported token type");
-    }
+    Long expirationTime = getExpirationTime(extraClaims);
 
     // Build the JWT token
     return Jwts.builder()
@@ -135,11 +105,7 @@ public class JwtService {
    */
   public boolean isValidToken(String token, CustomUserDetails userDetails) {
     // Check if the token is expired
-    try {
-      if (isTokenExpired(token)) {
-        return false;
-      }
-    } catch (Exception e) {
+    if (!isValidToken(token)) {
       return false;
     }
 
@@ -187,6 +153,34 @@ public class JwtService {
    */
   public Claims getPayload(String token) {
     return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
+  }
+
+  /**
+   * Returns the expiration time for the given token extra claims.
+   *
+   * <p>The expiration time is determined based on the type of {@link TokenExtraClaims}:
+   *
+   * <ul>
+   *   <li>{@link AccessTokenExtraClaims}: Returns access token expiration time.
+   *   <li>{@link RefreshTokenExtraClaims}: Returns refresh token expiration time.
+   *   <li>{@link ResetPasswordTokenExtraClaims}: Returns reset password token expiration time.
+   *   <li>{@link VerificationTokenExtraClaims}: Returns verification token expiration time.
+   * </ul>
+   *
+   * Throws {@link IllegalArgumentException} if the token type is unsupported.
+   *
+   * @param extraClaims the token extra claims specifying the token type
+   * @return the expiration time in milliseconds for the specified token type
+   * @throws IllegalArgumentException if the token type is unsupported
+   */
+  private Long getExpirationTime(TokenExtraClaims extraClaims) {
+    return switch (extraClaims) {
+      case AccessTokenExtraClaims _ -> jwtProperties.getAccessTokenExpiration();
+      case RefreshTokenExtraClaims _ -> jwtProperties.getRefreshTokenExpiration();
+      case ResetPasswordTokenExtraClaims _ -> jwtProperties.getResetPasswordTokenExpiration();
+      case VerificationTokenExtraClaims _ -> jwtProperties.getVerificationTokenExpiration();
+      default -> throw new IllegalArgumentException("Unsupported token type");
+    };
   }
 
   /**

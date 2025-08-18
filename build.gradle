@@ -111,4 +111,12 @@ jacocoTestReport {
         csv.required = false
         html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
     }
+    afterEvaluate {
+      classDirectories.setFrom(files(classDirectories.files.collect {
+          fileTree(dir: it, exclude: [
+              '**/configs/**',
+              '**/*Application*.class'
+          ])
+      }))
+    }
 }
