@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.5.4'
 	id 'io.spring.dependency-management' version '1.1.7'
   id 'com.diffplug.spotless' version '7.2.1'
+  id 'jacoco'
 }
 
 group = 'com.vhskillpro'
@@ -42,6 +43,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
   implementation 'org.springframework.boot:spring-boot-configuration-processor'
   implementation 'org.springframework.boot:spring-boot-starter-security'
+  testImplementation 'org.springframework.security:spring-security-test'
   implementation 'org.springframework.boot:spring-boot-starter-mail'
 
   // JWT
@@ -80,6 +82,9 @@ dependencies {
   // Testing
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   testImplementation 'org.assertj:assertj-core:3.27.3'
+
+  // In-memory DB for repository tests
+  testImplementation 'com.h2database:h2'
 }
 
 task installGitHooks(type: Copy) {
@@ -94,4 +99,16 @@ tasks.named('build').configure {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+    }
 }
