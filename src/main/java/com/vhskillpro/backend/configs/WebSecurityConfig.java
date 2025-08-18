@@ -49,7 +49,11 @@ public class WebSecurityConfig {
    * publicly accessible and do not require authentication.
    */
   private static final String[] WHITELIST_URLS = {
-    "/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**"
+    "/api/v1/auth/sign-in",
+    "/api/v1/auth/resend-verification-email",
+    "/api/v1/auth/verify-email",
+    "/swagger-ui/**",
+    "/v3/api-docs/**"
   };
 
   @Bean

@@ -4,6 +4,7 @@ public enum AuthMessages {
   SIGN_IN_SUCCESS("Sign-in successful"),
   EMAIL_VERIFICATION_SUCCESS("Email verification successful"),
   RESEND_VERIFICATION_EMAIL_SUCCESS("Verification email resent successfully"),
+  PROFILE_FETCH_SUCCESS("Profile fetched successfully"),
   EMAIL_OR_PASSWORD_INVALID("Email or password is invalid"),
   VERIFICATION_TOKEN_ALREADY_SENT(
       "Verification token has already been sent. Please re-send the email later."),

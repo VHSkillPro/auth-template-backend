@@ -12,6 +12,16 @@ public class ModelMapperConfig {
   public ModelMapper modelMapper() {
     ModelMapper modelMapper = new ModelMapper();
     modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
+    customMapping(modelMapper);
     return modelMapper;
   }
+
+  /**
+   * Configures custom mappings for the provided {@link ModelMapper} instance. Use this method to
+   * define specific property mappings, converters, or type maps to customize how objects are mapped
+   * within the application.
+   *
+   * @param modelMapper the {@link ModelMapper} instance to configure
+   */
+  private void customMapping(ModelMapper modelMapper) {}
 }

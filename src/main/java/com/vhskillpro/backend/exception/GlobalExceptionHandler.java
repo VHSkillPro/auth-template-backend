@@ -57,6 +57,14 @@ public class GlobalExceptionHandler {
    * @param ex the {@code InsufficientAuthenticationException} encountered
    * @return an {@code ApiResponse<Void>} indicating unauthorized access
    */
+  @io.swagger.v3.oas.annotations.responses.ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized",
+      content =
+          @io.swagger.v3.oas.annotations.media.Content(
+              mediaType = "application/json",
+              schema =
+                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
   @ExceptionHandler(InsufficientAuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiResponse<Void> handleInsufficientAuthenticationException(
@@ -72,6 +80,14 @@ public class GlobalExceptionHandler {
    * @param ex the {@link AuthorizationDeniedException} instance
    * @return an {@link ApiResponse} with forbidden status and the exception message
    */
+  @io.swagger.v3.oas.annotations.responses.ApiResponse(
+      responseCode = "403",
+      description = "Forbidden",
+      content =
+          @io.swagger.v3.oas.annotations.media.Content(
+              mediaType = "application/json",
+              schema =
+                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ApiResponse<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
@@ -85,6 +101,14 @@ public class GlobalExceptionHandler {
    * @param ex the exception that was thrown
    * @return an {@link ApiResponse} indicating an internal server error
    */
+  @io.swagger.v3.oas.annotations.responses.ApiResponse(
+      responseCode = "500",
+      description = "Internal Server Error",
+      content =
+          @io.swagger.v3.oas.annotations.media.Content(
+              mediaType = "application/json",
+              schema =
+                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiResponse<Void> handleException(Exception ex) {

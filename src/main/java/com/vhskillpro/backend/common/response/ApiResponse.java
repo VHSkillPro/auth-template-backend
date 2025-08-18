@@ -14,15 +14,13 @@ import org.springframework.http.HttpStatus;
 @SuperBuilder(toBuilder = true)
 @Schema(description = "Standard API response")
 public class ApiResponse<T> {
-  @Schema(description = "Indicates whether the API call was successful", example = "true")
+  @Schema(description = "Indicates whether the API call was successful")
   private boolean success;
 
-  @Schema(description = "HTTP status code of the response", example = "200")
+  @Schema(description = "HTTP status code of the response")
   private int statusCode;
 
-  @Schema(
-      description = "Message describing the result of the API call",
-      example = "Operation successful")
+  @Schema(description = "Message describing the result of the API call")
   private String message;
 
   /**

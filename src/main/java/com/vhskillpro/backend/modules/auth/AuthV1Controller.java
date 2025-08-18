@@ -2,12 +2,15 @@ package com.vhskillpro.backend.modules.auth;
 
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
+import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +39,8 @@ public class AuthV1Controller {
    */
   @Operation(
       summary = "Sign In",
-      description = "Authenticates a user and returns a JWT token.",
+      description =
+          "Authenticates a user and returns a JWT token. This API doesn't need authentication.",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
@@ -75,14 +79,28 @@ public class AuthV1Controller {
    */
   @Operation(
       summary = "Resend Verification Email",
-      description = "Resends a verification email to the user with the specified email address.",
+      description =
+          "Resends a verification email to the user with the specified email address. This API"
+              + " doesn't need authentication.",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Verification email resent successfully"),
+            description = "Verification email resent successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Bad request, e.g., user already enabled or token already sent")
+            description = "Bad request, e.g., user already enabled or token already sent",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
       })
   @PostMapping("/resend-verification-email")
   public ApiResponse<Void> resendVerificationEmail(
@@ -102,7 +120,9 @@ public class AuthV1Controller {
    */
   @Operation(
       summary = "Verify Email",
-      description = "Verifies a user's email address using the provided token.",
+      description =
+          "Verifies a user's email address using the provided token. This API doesn't need"
+              + " authentication.",
       parameters = {
         @io.swagger.v3.oas.annotations.Parameter(
             name = "token",
@@ -112,10 +132,22 @@ public class AuthV1Controller {
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Email verified successfully"),
+            description = "Email verified successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Bad request, e.g., invalid or expired token")
+            description = "Bad request, e.g., invalid or expired token",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
       })
   @GetMapping("/verify-email")
   public ApiResponse<Void> verifyEmail(@RequestParam String token) {
@@ -123,5 +155,36 @@ public class AuthV1Controller {
     return ApiResponse.success(AuthMessages.EMAIL_VERIFICATION_SUCCESS.getMessage());
   }
 
+  /**
+   * Retrieves the profile information of the currently authenticated user.
+   *
+   * <p>This endpoint requires authentication and returns the user's profile details.
+   *
+   * @param authentication the authentication object containing the user's credentials
+   * @return a {@link DataApiResponse} containing the {@link ProfileDTO} of the authenticated user
+   */
+  @Operation(
+      summary = "Get User Profile",
+      description = "Fetches the profile of the authenticated user.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Profile fetched successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = DataApiResponseProfileDTO.class))),
+      })
+  @GetMapping("/profile")
+  public DataApiResponse<ProfileDTO> getProfile(Authentication authentication) {
+    Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+    ProfileDTO profile = authService.getProfile(userId);
+    return DataApiResponse.success(profile, AuthMessages.PROFILE_FETCH_SUCCESS.getMessage());
+  }
+
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}
+
+  private class DataApiResponseProfileDTO extends DataApiResponse<ProfileDTO> {}
 }
