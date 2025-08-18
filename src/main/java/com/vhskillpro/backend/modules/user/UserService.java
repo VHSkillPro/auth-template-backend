@@ -125,10 +125,6 @@ public class UserService implements UserDetailsService {
                         HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
 
     // Assign updated values
-    if (userUpdateDTO.getPassword() != null) {
-      user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
-    }
-
     user.setFirstName(userUpdateDTO.getFirstName());
     user.setLastName(userUpdateDTO.getLastName());
     user.setLocked(userUpdateDTO.getLocked());
