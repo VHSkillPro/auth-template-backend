@@ -8,11 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -111,6 +114,47 @@ public class AvatarV1Controller {
   public DataApiResponse<AvatarDTO> getAvatar(@PathVariable Long id) {
     AvatarDTO avatarDTO = avatarService.getAvatar(id);
     return DataApiResponse.success(avatarDTO, AvatarMessages.AVATAR_GET_SUCCESS.getMessage());
+  }
+
+  /**
+   * Deletes the avatar of a user by their unique ID.
+   *
+   * <p>This endpoint removes the avatar associated with the specified user. If the user is found,
+   * their avatar is deleted and a success response is returned. If the user does not exist, a not
+   * found response is returned.
+   *
+   * @param id the unique identifier of the user whose avatar is to be deleted
+   * @return an {@link ApiResponse} indicating the result of the delete operation
+   */
+  @Operation(
+      summary = "Delete user avatar",
+      description = "Deletes the avatar of a user by their ID",
+      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User avatar deleted successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "User not found",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @DeleteMapping(value = "/{id}/avatar")
+  @ResponseStatus(HttpStatus.OK)
+  public ApiResponse<Void> deleteAvatar(@PathVariable Long id) {
+    avatarService.deleteAvatar(id);
+    return ApiResponse.success(AvatarMessages.AVATAR_DELETE_SUCCESS.getMessage());
   }
 
   private class DataApiResponseAvatarDTO extends DataApiResponse<AvatarDTO> {}

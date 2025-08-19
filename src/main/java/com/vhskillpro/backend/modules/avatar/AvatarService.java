@@ -88,7 +88,10 @@ public class AvatarService {
                     new AppException(
                         HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
     String avatarUrl = user.getAvatarUrl();
-    return AvatarDTO.builder().avatarUrl(getAvatarUrl(avatarUrl)).build();
+
+    return AvatarDTO.builder()
+        .avatarUrl(avatarUrl != null ? getAvatarUrl(avatarUrl) : null)
+        .build();
   }
 
   /**
@@ -131,6 +134,34 @@ public class AvatarService {
     } catch (Exception e) {
       System.err.println(e.getMessage());
       throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
+    }
+  }
+
+  /**
+   * Deletes the avatar associated with the specified user.
+   *
+   * <p>This method first retrieves the user by their ID. If the user exists and has an avatar URL,
+   * it deletes the avatar resource, sets the user's avatar URL to {@code null}, and saves the
+   * updated user. Access is restricted to the user whose ID matches the authenticated principal.
+   *
+   * @param userId the ID of the user whose avatar is to be deleted
+   * @throws AppException if the user is not found
+   */
+  @Transactional
+  @PreAuthorize("#userId == authentication.principal.id")
+  public void deleteAvatar(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+    String avatarUrl = user.getAvatarUrl();
+    if (avatarUrl != null) {
+      deleteAvatar(avatarUrl);
+      user.setAvatarUrl(null);
+      userRepository.save(user);
     }
   }
 }
