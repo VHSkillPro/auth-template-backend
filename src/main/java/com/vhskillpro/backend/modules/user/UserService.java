@@ -1,6 +1,7 @@
 package com.vhskillpro.backend.modules.user;
 
 import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.avatar.AvatarService;
 import com.vhskillpro.backend.modules.role.RoleRepository;
 import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
@@ -35,7 +36,8 @@ public class UserService implements UserDetailsService {
       ModelMapper modelMapper,
       UserRepository userRepository,
       RoleRepository roleRepository,
-      @Lazy PasswordEncoder passwordEncoder) {
+      @Lazy PasswordEncoder passwordEncoder,
+      AvatarService avatarService) {
     this.userRepository = userRepository;
     this.modelMapper = modelMapper;
     this.roleRepository = roleRepository;
