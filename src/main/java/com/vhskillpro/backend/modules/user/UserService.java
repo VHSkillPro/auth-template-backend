@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -117,6 +119,7 @@ public class UserService implements UserDetailsService {
    */
   @PreAuthorize("hasAnyAuthority('all:all', 'user:update')")
   @Transactional
+  @CacheEvict(value = "userDetails", key = "#userId")
   public UserDTO update(Long userId, UserUpdateDTO userUpdateDTO) {
     User user =
         userRepository
@@ -129,11 +132,14 @@ public class UserService implements UserDetailsService {
     // Assign updated values
     user.setFirstName(userUpdateDTO.getFirstName());
     user.setLastName(userUpdateDTO.getLastName());
-    user.setLocked(userUpdateDTO.getLocked());
-    user.setRole(
-        userUpdateDTO.getRoleId() != null
-            ? roleRepository.getReferenceById(userUpdateDTO.getRoleId())
-            : null);
+
+    if (!user.isSuperuser()) {
+      user.setLocked(userUpdateDTO.getLocked());
+      user.setRole(
+          userUpdateDTO.getRoleId() != null
+              ? roleRepository.getReferenceById(userUpdateDTO.getRoleId())
+              : null);
+    }
 
     // Save updated user
     User updatedUser = userRepository.save(user);
@@ -153,6 +159,7 @@ public class UserService implements UserDetailsService {
    */
   @PreAuthorize("hasAnyAuthority('all:all', 'user:delete')")
   @Transactional
+  @CacheEvict(value = "userDetails", key = "#userId")
   public void delete(Long userId) {
     if (!userRepository.existsById(userId)) {
       throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
@@ -175,6 +182,10 @@ public class UserService implements UserDetailsService {
    */
   @Override
   @Transactional
+  @Cacheable(
+      value = "userDetails",
+      key = "@userRepository.findByEmail(#username).get().id",
+      condition = "@userRepository.existsByEmail(#username)")
   public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user =
         userRepository
@@ -190,8 +201,12 @@ public class UserService implements UserDetailsService {
             .enabled(user.isEnabled())
             .locked(user.isLocked())
             .superuser(user.isSuperuser())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
             .roleId(user.getRole() != null ? user.getRole().getId() : null)
             .verificationToken(user.getVerificationToken())
+            .createdAt(user.getCreatedAt())
+            .updatedAt(user.getUpdatedAt())
             .build();
 
     if (user.getRole() != null && !user.isSuperuser()) {

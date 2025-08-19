@@ -86,7 +86,6 @@ public class UserV1Controller {
   @GetMapping
   public PagedApiResponse<UserDTO> index(
       @Parameter(hidden = true) UserFilterDTO filter, @Parameter(hidden = true) Pageable pageable) {
-    System.out.println(filter);
     Page<UserDTO> userDTOs = userService.findAll(filter, pageable);
     return PagedApiResponse.success(userDTOs, UserMessages.USER_INDEX_SUCCESS.getMessage());
   }

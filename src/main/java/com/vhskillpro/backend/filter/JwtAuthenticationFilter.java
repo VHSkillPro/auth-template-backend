@@ -43,6 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       try {
         userDetails = userService.loadUserByUsername(email);
       } catch (Exception e) {
+        System.err.println(e);
+        chain.doFilter(request, response);
         return;
       }
 

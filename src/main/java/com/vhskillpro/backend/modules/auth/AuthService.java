@@ -4,6 +4,7 @@ import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
+import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.User;
 import com.vhskillpro.backend.modules.user.UserMessages;
 import com.vhskillpro.backend.modules.user.UserRepository;
@@ -14,9 +15,9 @@ import com.vhskillpro.backend.utils.jwt.claims.AccessTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.RefreshTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -205,38 +206,24 @@ public class AuthService {
    * @return a {@link ProfileDTO} containing the user's profile information and permissions
    * @throws AppException if the user is not found in the repository
    */
-  @Transactional
   public ProfileDTO getProfile(Long userId) {
-    // Get user ID from token
-    User user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(
-                () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+    CustomUserDetails userDetails =
+        (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-    // Get user permissions
-    List<String> permissions = List.of();
-    if (user.isSuperuser()) {
-      permissions = List.of("all:all");
-    } else if (user.getRole() != null) {
-      permissions =
-          user.getRole().getPermissions().stream().map(permission -> permission.getName()).toList();
-    }
-
-    // Map user entity to ProfileDTO
     return ProfileDTO.builder()
-        .id(user.getId())
-        .email(user.getEmail())
-        .firstName(user.getFirstName())
-        .lastName(user.getLastName())
-        .permissions(permissions)
-        .enabled(user.isEnabled())
-        .locked(user.isLocked())
-        .superuser(user.isSuperuser())
-        .createdAt(user.getCreatedAt())
-        .updatedAt(user.getUpdatedAt())
+        .id(userDetails.getId())
+        .email(userDetails.getEmail())
+        .firstName(userDetails.getFirstName())
+        .lastName(userDetails.getLastName())
+        .permissions(
+            userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .toList())
+        .enabled(userDetails.isEnabled())
+        .locked(userDetails.isLocked())
+        .superuser(userDetails.isSuperuser())
+        .createdAt(userDetails.getCreatedAt())
+        .updatedAt(userDetails.getUpdatedAt())
         .build();
   }
 }
