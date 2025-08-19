@@ -1,9 +1,17 @@
 package com.vhskillpro.backend.modules.avatar;
 
+import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.avatar.dto.AvatarDTO;
+import com.vhskillpro.backend.modules.user.User;
+import com.vhskillpro.backend.modules.user.UserMessages;
+import com.vhskillpro.backend.modules.user.UserRepository;
 import com.vhskillpro.backend.utils.r2.R2Properties;
 import com.vhskillpro.backend.utils.r2.R2Service;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,10 +22,13 @@ public class AvatarService {
 
   private final R2Service r2Service;
   private final R2Properties r2Properties;
+  private final UserRepository userRepository;
 
-  public AvatarService(R2Service r2Service, R2Properties r2Properties) {
+  public AvatarService(
+      R2Service r2Service, R2Properties r2Properties, UserRepository userRepository) {
     this.r2Service = r2Service;
     this.r2Properties = r2Properties;
+    this.userRepository = userRepository;
   }
 
   /**
@@ -57,5 +68,69 @@ public class AvatarService {
    */
   public void deleteAvatar(String objectKey) {
     r2Service.deleteFile(AVATAR_BUCKET, objectKey);
+  }
+
+  /**
+   * Retrieves the avatar URL for a user by their ID.
+   *
+   * @param userId the ID of the user whose avatar is to be retrieved
+   * @return an {@link AvatarDTO} containing the avatar URL
+   * @throws AppException if the user with the specified ID is not found
+   */
+  @Transactional
+  @PreAuthorize("#userId == authentication.principal.id")
+  public AvatarDTO getAvatar(Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+    String avatarUrl = user.getAvatarUrl();
+    return AvatarDTO.builder().avatarUrl(getAvatarUrl(avatarUrl)).build();
+  }
+
+  /**
+   * Uploads a new avatar for the specified user.
+   *
+   * <p>This method finds the user by their ID, uploads the provided avatar file, deletes the user's
+   * previous avatar if it exists, and updates the user's avatar URL. Access is restricted to the
+   * user themselves.
+   *
+   * @param userId the ID of the user uploading the avatar
+   * @param avatarFile the avatar image file to upload
+   * @throws AppException if the user is not found, or if the upload fails
+   */
+  @Transactional
+  @PreAuthorize("#userId == authentication.principal.id")
+  public void uploadAvatar(Long userId, MultipartFile avatarFile) {
+    try {
+      // Find the user by ID
+      User user =
+          userRepository
+              .findById(userId)
+              .orElseThrow(
+                  () ->
+                      new AppException(
+                          HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+
+      // Upload the avatar file and get the object key
+      String objectKey = uploadAvatar(avatarFile);
+
+      // If the user already has an avatar, delete the old one
+      if (user.getAvatarUrl() != null) {
+        deleteAvatar(user.getAvatarUrl());
+      }
+
+      // Set the new avatar URL for the user
+      user.setAvatarUrl(objectKey);
+      userRepository.save(user);
+    } catch (AppException e) {
+      throw e;
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+      throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
+    }
   }
 }
