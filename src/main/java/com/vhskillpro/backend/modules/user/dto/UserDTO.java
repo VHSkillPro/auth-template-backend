@@ -18,6 +18,5 @@ public class UserDTO {
   private boolean enabled;
   private boolean locked;
   private boolean superuser;
-  private String avatarUrl;
   private RoleDTO role;
 }

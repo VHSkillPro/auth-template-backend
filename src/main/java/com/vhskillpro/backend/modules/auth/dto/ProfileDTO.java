@@ -26,9 +26,6 @@ public class ProfileDTO {
   @Schema(description = "Last name of the user")
   private String lastName;
 
-  @Schema(description = "Avatar URL of the user")
-  private String avatarUrl;
-
   @Schema(description = "List of permissions assigned to the user")
   private List<String> permissions;
 

@@ -1,6 +1,7 @@
 package com.vhskillpro.backend.modules.user;
 
 import com.vhskillpro.backend.exception.AppException;
+import com.vhskillpro.backend.modules.avatar.AvatarService;
 import com.vhskillpro.backend.modules.role.RoleRepository;
 import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
@@ -23,9 +24,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserService implements UserDetailsService {
+  private final AvatarService avatarService;
   private final ModelMapper modelMapper;
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
@@ -35,11 +38,13 @@ public class UserService implements UserDetailsService {
       ModelMapper modelMapper,
       UserRepository userRepository,
       RoleRepository roleRepository,
-      @Lazy PasswordEncoder passwordEncoder) {
+      @Lazy PasswordEncoder passwordEncoder,
+      AvatarService avatarService) {
     this.userRepository = userRepository;
     this.modelMapper = modelMapper;
     this.roleRepository = roleRepository;
     this.passwordEncoder = passwordEncoder;
+    this.avatarService = avatarService;
   }
 
   /**
@@ -201,5 +206,48 @@ public class UserService implements UserDetailsService {
     }
 
     return userDetails;
+  }
+
+  /**
+   * Uploads a new avatar for the specified user.
+   *
+   * <p>This method finds the user by their ID, uploads the provided avatar file, deletes the user's
+   * previous avatar if it exists, and updates the user's avatar URL. Access is restricted to the
+   * user themselves.
+   *
+   * @param userId the ID of the user uploading the avatar
+   * @param avatarFile the avatar image file to upload
+   * @throws AppException if the user is not found, or if the upload fails
+   */
+  @Transactional
+  @PreAuthorize("#userId == authentication.principal.id")
+  public void uploadAvatar(Long userId, MultipartFile avatarFile) {
+    try {
+      // Find the user by ID
+      User user =
+          userRepository
+              .findById(userId)
+              .orElseThrow(
+                  () ->
+                      new AppException(
+                          HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+
+      // Upload the avatar file and get the object key
+      String objectKey = avatarService.uploadAvatar(avatarFile);
+
+      // If the user already has an avatar, delete the old one
+      if (user.getAvatarUrl() != null) {
+        avatarService.deleteAvatar(user.getAvatarUrl());
+      }
+
+      // Set the new avatar URL for the user
+      user.setAvatarUrl(objectKey);
+      userRepository.save(user);
+    } catch (AppException e) {
+      throw e;
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+      throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload avatar");
+    }
   }
 }

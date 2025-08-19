@@ -231,7 +231,6 @@ public class AuthService {
         .email(user.getEmail())
         .firstName(user.getFirstName())
         .lastName(user.getLastName())
-        .avatarUrl(user.getAvatarUrl())
         .permissions(permissions)
         .enabled(user.isEnabled())
         .locked(user.isLocked())
