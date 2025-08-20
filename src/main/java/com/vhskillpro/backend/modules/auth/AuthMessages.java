@@ -6,9 +6,13 @@ public enum AuthMessages {
   RESEND_VERIFICATION_EMAIL_SUCCESS("Verification email resent successfully"),
   TOKEN_REFRESH_SUCCESS("Token refresh successful"),
   PROFILE_FETCH_SUCCESS("Profile fetched successfully"),
+  RESET_PASSWORD_EMAIL_SENT("Reset password email sent successfully"),
+  VERIFY_RESET_PASSWORD_TOKEN_SUCCESS("Reset password token verified successfully"),
   EMAIL_OR_PASSWORD_INVALID("Email or password is invalid"),
   VERIFICATION_TOKEN_ALREADY_SENT(
       "Verification token has already been sent. Please re-send the email later."),
+  RESET_PASSWORD_TOKEN_ALREADY_SENT(
+      "Reset password token has already been sent. Please re-send the email later."),
   VERIFICATION_TOKEN_NOT_FOUND("Verification token not found."),
   INVALID_REFRESH_TOKEN("Invalid refresh token."),
   INVALID_VERIFICATION_TOKEN("Invalid verification token."),

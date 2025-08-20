@@ -15,6 +15,7 @@ import com.vhskillpro.backend.utils.jwt.JwtProperties;
 import com.vhskillpro.backend.utils.jwt.JwtService;
 import com.vhskillpro.backend.utils.jwt.claims.AccessTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.RefreshTokenExtraClaims;
+import com.vhskillpro.backend.utils.jwt.claims.ResetPasswordTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -292,5 +293,53 @@ public class AuthService {
             .build());
 
     return tokenDTO;
+  }
+
+  /**
+   * Sends a reset password email to the user with the specified email address.
+   *
+   * @param email the email address of the user requesting a password reset
+   * @throws AppException if the user is not found, is locked or disabled, or if email sending fails
+   */
+  public void sendResetPasswordEmail(String email) {
+    // Check if user exists
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+
+    // Check if user is locked or disabled
+    if (user.isLocked() || !user.isEnabled()) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
+    }
+
+    // Check if a reset password token is already sent
+    String oldToken = user.getVerificationToken();
+    if (jwtService.isValidToken(oldToken)
+        && Long.valueOf(jwtService.getSubject(oldToken)) == user.getId()) {
+      throw new AppException(
+          HttpStatus.BAD_REQUEST, AuthMessages.RESET_PASSWORD_TOKEN_ALREADY_SENT.getMessage());
+    }
+
+    // Generate reset password token
+    ResetPasswordTokenExtraClaims extraClaims =
+        ResetPasswordTokenExtraClaims.builder().email(email).build();
+
+    String token = jwtService.generateToken(extraClaims, user.getId());
+
+    // Send reset password email
+    try {
+      emailService.sendResetPasswordEmail(user.getEmail(), token);
+    } catch (MailException e) {
+      throw new AppException(
+          HttpStatus.INTERNAL_SERVER_ERROR, AuthMessages.EMAIL_SENDING_FAILED.getMessage());
+    }
+
+    // Update user's verification token
+    user.setVerificationToken(token);
+    userRepository.save(user);
   }
 }
