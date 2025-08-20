@@ -3,6 +3,7 @@ package com.vhskillpro.backend.modules.auth;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
+import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
@@ -182,6 +183,36 @@ public class AuthV1Controller {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     ProfileDTO profile = authService.getProfile(userId);
     return DataApiResponse.success(profile, AuthMessages.PROFILE_FETCH_SUCCESS.getMessage());
+  }
+
+  /**
+   * Handles the refresh token request.
+   *
+   * <p>Accepts a valid {@link RefreshDTO} containing the refresh token and returns a new access
+   * token.
+   *
+   * @param refreshDTO the DTO containing the refresh token, validated for correctness
+   * @return a {@link DataApiResponse} containing the refreshed {@link TokenDTO} and a success
+   *     message
+   */
+  @Operation(
+      summary = "Refresh Token",
+      description = "Refreshes the access token using the provided refresh token.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Token refreshed successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = DataApiResponseTokenDTO.class)))
+      })
+  @PostMapping("/refresh")
+  public DataApiResponse<TokenDTO> refresh(@Valid @RequestBody RefreshDTO refreshDTO) {
+    TokenDTO tokenDTO = authService.refresh(refreshDTO);
+    return DataApiResponse.success(tokenDTO, AuthMessages.TOKEN_REFRESH_SUCCESS.getMessage());
   }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}

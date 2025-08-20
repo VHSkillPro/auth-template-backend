@@ -2,12 +2,14 @@ package com.vhskillpro.backend.modules.auth;
 
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
+import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.User;
 import com.vhskillpro.backend.modules.user.UserMessages;
 import com.vhskillpro.backend.modules.user.UserRepository;
+import com.vhskillpro.backend.modules.user.UserService;
 import com.vhskillpro.backend.utils.email.EmailService;
 import com.vhskillpro.backend.utils.jwt.JwtProperties;
 import com.vhskillpro.backend.utils.jwt.JwtService;
@@ -28,18 +30,24 @@ public class AuthService {
   private final JwtProperties jwtProperties;
   private final JwtService jwtService;
   private final EmailService emailService;
+  private final UserService userService;
+  private final BlacklistTokenRepository blacklistTokenRepository;
 
   AuthService(
       PasswordEncoder passwordEncoder,
       JwtProperties jwtProperties,
       JwtService jwtService,
       EmailService emailService,
-      UserRepository userRepository) {
+      UserRepository userRepository,
+      UserService userService,
+      BlacklistTokenRepository blacklistTokenRepository) {
     this.passwordEncoder = passwordEncoder;
     this.jwtProperties = jwtProperties;
     this.jwtService = jwtService;
     this.emailService = emailService;
     this.userRepository = userRepository;
+    this.userService = userService;
+    this.blacklistTokenRepository = blacklistTokenRepository;
   }
 
   /**
@@ -89,7 +97,8 @@ public class AuthService {
             .roleId(user.getRole() != null ? user.getRole().getId() : null)
             .superuser(user.isSuperuser())
             .build();
-    RefreshTokenExtraClaims refreshTokenExtraClaims = RefreshTokenExtraClaims.builder().build();
+    RefreshTokenExtraClaims refreshTokenExtraClaims =
+        RefreshTokenExtraClaims.builder().email(user.getEmail()).build();
 
     TokenDTO tokenDTO =
         TokenDTO.builder()
@@ -225,5 +234,63 @@ public class AuthService {
         .createdAt(userDetails.getCreatedAt())
         .updatedAt(userDetails.getUpdatedAt())
         .build();
+  }
+
+  /**
+   * Refreshes the authentication tokens using the provided refresh token.
+   *
+   * <p>Validates the refresh token, retrieves the associated user, and generates new access and
+   * refresh tokens.
+   *
+   * @param refreshDTO the DTO containing the refresh token
+   * @return a {@link TokenDTO} containing the new access and refresh tokens along with their
+   *     expiration times
+   * @throws AppException if the refresh token is invalid
+   */
+  public TokenDTO refresh(RefreshDTO refreshDTO) {
+    String token = refreshDTO.getRefreshToken();
+
+    // Validate the refresh token
+    if (!jwtService.isValidToken(token)) {
+      throw new AppException(
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+    }
+
+    // Check if refresh token is blacklisted
+    if (blacklistTokenRepository.existsById(token)) {
+      throw new AppException(
+          HttpStatus.UNAUTHORIZED, AuthMessages.REFRESH_TOKEN_BLACKLISTED.getMessage());
+    }
+
+    // Get user from token
+    String email = jwtService.getPayload(token).get("email", String.class);
+    CustomUserDetails userDetails = userService.loadUserByUsername(email);
+
+    // Generate new tokens
+    AccessTokenExtraClaims accessTokenExtraClaims =
+        AccessTokenExtraClaims.builder()
+            .email(userDetails.getEmail())
+            .roleId(userDetails.getRoleId())
+            .superuser(userDetails.isSuperuser())
+            .build();
+    RefreshTokenExtraClaims refreshTokenExtraClaims =
+        RefreshTokenExtraClaims.builder().email(userDetails.getEmail()).build();
+
+    TokenDTO tokenDTO =
+        TokenDTO.builder()
+            .accessToken(jwtService.generateToken(accessTokenExtraClaims, userDetails))
+            .refreshToken(jwtService.generateToken(refreshTokenExtraClaims, userDetails))
+            .accessTokenExpiration(jwtProperties.getAccessTokenExpiration())
+            .refreshTokenExpiration(jwtProperties.getRefreshTokenExpiration())
+            .build();
+
+    // Blacklist the old refresh token
+    blacklistTokenRepository.save(
+        BlacklistToken.builder()
+            .token(token)
+            .timeToLive(jwtProperties.getRefreshTokenExpiration())
+            .build());
+
+    return tokenDTO;
   }
 }
