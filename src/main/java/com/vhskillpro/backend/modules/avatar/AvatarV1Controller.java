@@ -3,16 +3,17 @@ package com.vhskillpro.backend.modules.avatar;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.modules.avatar.dto.AvatarDTO;
+import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.dto.UserUploadAvatarDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -31,12 +32,12 @@ public class AvatarV1Controller {
   /**
    * Handles the uploading of a user's avatar image.
    *
-   * <p>Expects a multipart/form-data request containing the avatar file. The avatar is associated
-   * with the user identified by the provided ID.
+   * <p>This endpoint accepts a multipart/form-data request containing the avatar image file. Only
+   * authenticated users can upload their avatar.
    *
-   * @param id the ID of the user whose avatar is being uploaded
-   * @param userUploadAvatarDTO DTO containing the avatar file to upload
-   * @return an {@link ApiResponse} indicating the success of the upload operation
+   * @param authentication the authentication object containing the current user's details
+   * @param userUploadAvatarDTO the DTO containing the avatar file to be uploaded
+   * @return an {@link ApiResponse} indicating the result of the upload operation
    */
   @Operation(
       summary = "Upload user avatar",
@@ -71,20 +72,20 @@ public class AvatarV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class)))
       })
-  @PutMapping(value = "/{id}/avatar", consumes = "multipart/form-data")
+  @PutMapping(value = "/avatar", consumes = "multipart/form-data")
   public ApiResponse<Void> uploadAvatar(
-      @PathVariable Long id, @Valid @ModelAttribute UserUploadAvatarDTO userUploadAvatarDTO) {
-    avatarService.uploadAvatar(id, userUploadAvatarDTO.getAvatarFile());
+      Authentication authentication,
+      @Valid @ModelAttribute UserUploadAvatarDTO userUploadAvatarDTO) {
+    Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+    avatarService.uploadAvatar(userId, userUploadAvatarDTO.getAvatarFile());
     return ApiResponse.success(AvatarMessages.AVATAR_UPLOAD_SUCCESS.getMessage());
   }
 
   /**
-   * Retrieves the avatar of a user by their unique identifier.
+   * Retrieves the avatar of the authenticated user.
    *
-   * @param id the unique identifier of the user whose avatar is to be retrieved
-   * @return a {@link DataApiResponse} containing the {@link AvatarDTO} if found, along with a
-   *     success message
-   * @throws UserNotFoundException if the user with the specified ID does not exist
+   * @param authentication the authentication object containing user details
+   * @return a {@link DataApiResponse} containing the user's avatar data and a success message
    */
   @Operation(
       summary = "Get user avatar",
@@ -99,31 +100,22 @@ public class AvatarV1Controller {
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = DataApiResponseAvatarDTO.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "User not found",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class)))
+                            implementation = DataApiResponseAvatarDTO.class)))
       })
-  @GetMapping(value = "/{id}/avatar")
-  public DataApiResponse<AvatarDTO> getAvatar(@PathVariable Long id) {
-    AvatarDTO avatarDTO = avatarService.getAvatar(id);
+  @GetMapping(value = "/avatar")
+  public DataApiResponse<AvatarDTO> getAvatar(Authentication authentication) {
+    Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+    AvatarDTO avatarDTO = avatarService.getAvatar(userId);
     return DataApiResponse.success(avatarDTO, AvatarMessages.AVATAR_GET_SUCCESS.getMessage());
   }
 
   /**
-   * Deletes the avatar of a user by their unique ID.
+   * Deletes the avatar of the authenticated user.
    *
-   * <p>This endpoint removes the avatar associated with the specified user. If the user is found,
-   * their avatar is deleted and a success response is returned. If the user does not exist, a not
-   * found response is returned.
+   * <p>This endpoint removes the avatar associated with the currently authenticated user. Returns a
+   * success response if the avatar is deleted, or a not found response if the user does not exist.
    *
-   * @param id the unique identifier of the user whose avatar is to be deleted
+   * @param authentication the authentication object containing the user's details
    * @return an {@link ApiResponse} indicating the result of the delete operation
    */
   @Operation(
@@ -139,21 +131,13 @@ public class AvatarV1Controller {
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "User not found",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class)))
       })
-  @DeleteMapping(value = "/{id}/avatar")
+  @DeleteMapping(value = "/avatar")
   @ResponseStatus(HttpStatus.OK)
-  public ApiResponse<Void> deleteAvatar(@PathVariable Long id) {
-    avatarService.deleteAvatar(id);
+  public ApiResponse<Void> deleteAvatar(Authentication authentication) {
+    Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+    avatarService.deleteAvatar(userId);
     return ApiResponse.success(AvatarMessages.AVATAR_DELETE_SUCCESS.getMessage());
   }
 

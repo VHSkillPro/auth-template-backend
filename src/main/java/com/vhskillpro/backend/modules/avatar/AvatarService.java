@@ -11,7 +11,6 @@ import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -78,7 +77,6 @@ public class AvatarService {
    * @throws AppException if the user with the specified ID is not found
    */
   @Transactional
-  @PreAuthorize("#userId == authentication.principal.id")
   public AvatarDTO getAvatar(Long userId) {
     User user =
         userRepository
@@ -106,7 +104,6 @@ public class AvatarService {
    * @throws AppException if the user is not found, or if the upload fails
    */
   @Transactional
-  @PreAuthorize("#userId == authentication.principal.id")
   public void uploadAvatar(Long userId, MultipartFile avatarFile) {
     try {
       // Find the user by ID
@@ -148,7 +145,6 @@ public class AvatarService {
    * @throws AppException if the user is not found
    */
   @Transactional
-  @PreAuthorize("#userId == authentication.principal.id")
   public void deleteAvatar(Long userId) {
     User user =
         userRepository
