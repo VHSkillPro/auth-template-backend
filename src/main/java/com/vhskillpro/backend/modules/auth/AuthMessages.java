@@ -5,16 +5,16 @@ public enum AuthMessages {
   PROFILE_FETCH_SUCCESS("Profile fetched successfully"),
 
   // Sign in
-  SIGN_IN_SUCCESS("Sign-in successful"),
+  SIGN_IN_SUCCESS("Sign-in successfully"),
   EMAIL_OR_PASSWORD_INVALID("Email or password is invalid"),
 
   // Refresh
-  TOKEN_REFRESH_SUCCESS("Token refresh successful"),
+  TOKEN_REFRESH_SUCCESS("Token refresh successfully"),
   INVALID_REFRESH_TOKEN("Invalid refresh token."),
   REFRESH_TOKEN_BLACKLISTED("Refresh token is blacklisted."),
 
   // Verification
-  EMAIL_VERIFICATION_SUCCESS("Email verification successful"),
+  EMAIL_VERIFICATION_SUCCESS("Email verification successfully"),
   VERIFICATION_TOKEN_NOT_FOUND("Verification token not found."),
   INVALID_VERIFICATION_TOKEN("Invalid verification token."),
 
@@ -31,7 +31,10 @@ public enum AuthMessages {
 
   // Reset password
   RESET_PASSWORD_SUCCESS("Reset password successfully"),
-  INVALID_RESET_PASSWORD_TOKEN("Invalid reset password token.");
+  INVALID_RESET_PASSWORD_TOKEN("Invalid reset password token."),
+
+  // Sign out
+  SIGN_OUT_SUCCESS("Sign-out successfully");
 
   private final String message;
 

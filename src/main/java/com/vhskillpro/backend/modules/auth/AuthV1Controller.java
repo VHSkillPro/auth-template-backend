@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -276,6 +277,37 @@ public class AuthV1Controller {
   public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
     authService.resetPassword(resetPasswordDTO);
     return ApiResponse.success(AuthMessages.RESET_PASSWORD_SUCCESS.getMessage());
+  }
+
+  /**
+   * Signs out the user by invalidating the provided refresh token.
+   *
+   * <p>This endpoint expects a refresh token as a request parameter and will invalidate it,
+   * effectively signing the user out of the system.
+   *
+   * @param refreshToken the refresh token to be invalidated
+   * @return an {@link ApiResponse} indicating successful sign out
+   */
+  @Operation(
+      summary = "Sign Out",
+      description = "Signs out the user by invalidating the provided refresh token.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User signed out successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @GetMapping("/sign-out")
+  public ApiResponse<Void> signOut(
+      @RequestHeader("Authorization") String bearerToken, @RequestParam String refreshToken) {
+    String accessToken = bearerToken.substring("Bearer ".length());
+    authService.signOut(accessToken, refreshToken);
+    return ApiResponse.success(AuthMessages.SIGN_OUT_SUCCESS.getMessage());
   }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}

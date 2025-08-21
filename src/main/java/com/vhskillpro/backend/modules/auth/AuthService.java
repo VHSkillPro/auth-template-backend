@@ -396,4 +396,47 @@ public class AuthService {
     user.setVerificationToken(null);
     userRepository.save(user);
   }
+
+  /**
+   * Signs out the user by invalidating the provided refresh token.
+   *
+   * @param refreshToken the refresh token to be invalidated
+   * @throws AppException if the token is invalid or does not match the authenticated user
+   */
+  public void signOut(String accessToken, String refreshToken) {
+    // Check refresh token is valid
+    if (!jwtService.isValidToken(refreshToken)) {
+      throw new AppException(
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+    }
+
+    if (blacklistTokenRepository.existsById(refreshToken)) {
+      throw new AppException(
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+    }
+
+    String email = jwtService.getPayload(refreshToken).get("email", String.class);
+    CustomUserDetails userDetails =
+        (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    if (userDetails.getEmail() == null || !userDetails.getEmail().equals(email)) {
+      throw new AppException(
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+    }
+
+    // Blacklist the refresh token
+    BlacklistToken blacklistToken =
+        BlacklistToken.builder()
+            .token(refreshToken)
+            .timeToLive(jwtProperties.getRefreshTokenExpiration())
+            .build();
+    blacklistTokenRepository.save(blacklistToken);
+
+    // Blacklist the access token
+    BlacklistToken accessBlacklistToken =
+        BlacklistToken.builder()
+            .token(accessToken)
+            .timeToLive(jwtProperties.getAccessTokenExpiration())
+            .build();
+    blacklistTokenRepository.save(accessBlacklistToken);
+  }
 }
