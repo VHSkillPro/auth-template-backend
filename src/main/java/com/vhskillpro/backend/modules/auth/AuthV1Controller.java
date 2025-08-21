@@ -8,6 +8,7 @@ import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResetPasswordDTO;
 import com.vhskillpro.backend.modules.auth.dto.SendResetPasswordEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
+import com.vhskillpro.backend.modules.auth.dto.SignUpDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -308,6 +309,36 @@ public class AuthV1Controller {
     String accessToken = bearerToken.substring("Bearer ".length());
     authService.signOut(accessToken, refreshToken);
     return ApiResponse.success(AuthMessages.SIGN_OUT_SUCCESS.getMessage());
+  }
+
+  /**
+   * Handles user registration requests.
+   *
+   * <p>Receives a {@link SignUpDTO} containing user details, validates the input, and delegates the
+   * registration process to the {@code authService}. Returns a success response if registration is
+   * successful.
+   *
+   * @param signUpDTO the data transfer object containing user registration details
+   * @return an {@link ApiResponse} indicating the result of the registration process
+   */
+  @Operation(
+      summary = "Sign Up",
+      description = "Registers a new user with the provided details.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User registered successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PostMapping("/sign-up")
+  public ApiResponse<Void> signUp(@Valid @RequestBody SignUpDTO signUpDTO) {
+    authService.signUp(signUpDTO);
+    return ApiResponse.success(AuthMessages.SIGN_UP_SUCCESS.getMessage());
   }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}

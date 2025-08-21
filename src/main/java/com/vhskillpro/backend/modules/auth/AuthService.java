@@ -5,12 +5,14 @@ import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResetPasswordDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
+import com.vhskillpro.backend.modules.auth.dto.SignUpDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.User;
 import com.vhskillpro.backend.modules.user.UserMessages;
 import com.vhskillpro.backend.modules.user.UserRepository;
 import com.vhskillpro.backend.modules.user.UserService;
+import com.vhskillpro.backend.modules.user.dto.UserDTO;
 import com.vhskillpro.backend.utils.email.EmailService;
 import com.vhskillpro.backend.utils.jwt.JwtProperties;
 import com.vhskillpro.backend.utils.jwt.JwtService;
@@ -19,6 +21,7 @@ import com.vhskillpro.backend.utils.jwt.claims.RefreshTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.ResetPasswordTokenExtraClaims;
 import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +30,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+
+  private final ModelMapper modelMapper;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtProperties jwtProperties;
@@ -42,7 +47,8 @@ public class AuthService {
       EmailService emailService,
       UserRepository userRepository,
       UserService userService,
-      BlacklistTokenRepository blacklistTokenRepository) {
+      BlacklistTokenRepository blacklistTokenRepository,
+      ModelMapper modelMapper) {
     this.passwordEncoder = passwordEncoder;
     this.jwtProperties = jwtProperties;
     this.jwtService = jwtService;
@@ -50,6 +56,7 @@ public class AuthService {
     this.userRepository = userRepository;
     this.userService = userService;
     this.blacklistTokenRepository = blacklistTokenRepository;
+    this.modelMapper = modelMapper;
   }
 
   /**
@@ -438,5 +445,34 @@ public class AuthService {
             .timeToLive(jwtProperties.getAccessTokenExpiration())
             .build();
     blacklistTokenRepository.save(accessBlacklistToken);
+  }
+
+  /**
+   * Registers a new user with the provided sign-up details.
+   *
+   * <p>This method creates a new {@link User} entity using the information from the given {@link
+   * SignUpDTO}, encodes the password, sets default values for enabled, locked, and superuser
+   * fields, saves the user to the repository, and returns a mapped {@link UserDTO}.
+   *
+   * @param signUpDTO the data transfer object containing user registration details
+   * @return a {@link UserDTO} representing the newly registered user
+   */
+  @Transactional
+  public UserDTO signUp(SignUpDTO signUpDTO) {
+    User user =
+        User.builder()
+            .email(signUpDTO.getEmail())
+            .password(passwordEncoder.encode(signUpDTO.getPassword()))
+            .firstName(signUpDTO.getFirstName())
+            .lastName(signUpDTO.getLastName())
+            .enabled(false)
+            .locked(false)
+            .superuser(false)
+            .build();
+
+    // Save user
+    User savedUser = userRepository.save(user);
+
+    return modelMapper.map(savedUser, UserDTO.class);
   }
 }

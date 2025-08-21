@@ -34,7 +34,10 @@ public enum AuthMessages {
   INVALID_RESET_PASSWORD_TOKEN("Invalid reset password token."),
 
   // Sign out
-  SIGN_OUT_SUCCESS("Sign-out successfully");
+  SIGN_OUT_SUCCESS("Sign-out successfully"),
+
+  // Sign up
+  SIGN_UP_SUCCESS("Sign-up successfully");
 
   private final String message;
 
