@@ -3,6 +3,7 @@ package com.vhskillpro.backend.modules.auth;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
+import com.vhskillpro.backend.modules.auth.dto.ResetPasswordDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
@@ -77,12 +78,12 @@ public class AuthService {
 
     // If user is not enabled
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, AuthMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_ENABLED.getMessage());
     }
 
     // If user is locked
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, AuthMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_LOCKED.getMessage());
     }
 
     // Check if the password matches
@@ -312,8 +313,12 @@ public class AuthService {
                         HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
 
     // Check if user is locked or disabled
-    if (user.isLocked() || !user.isEnabled()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
+    if (user.isLocked()) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+    }
+
+    if (!user.isEnabled()) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
     }
 
     // Check if a reset password token is already sent
@@ -340,6 +345,55 @@ public class AuthService {
 
     // Update user's verification token
     user.setVerificationToken(token);
+    userRepository.save(user);
+  }
+
+  /**
+   * Resets the user's password using the provided reset password token and new password. If any
+   * validation fails, an {@link AppException} is thrown with the appropriate HTTP status and
+   * message.
+   *
+   * @param resetPasswordDTO Data transfer object containing the reset password token and new
+   *     password.
+   * @throws AppException if the token is invalid, the user is not found, the user is
+   *     locked/disabled, or the token does not match.
+   */
+  public void resetPassword(ResetPasswordDTO resetPasswordDTO) {
+    // Validate the reset password token
+    if (!jwtService.isValidToken(resetPasswordDTO.getToken())) {
+      throw new AppException(
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.getMessage());
+    }
+
+    // Get user from token
+    String email = jwtService.getPayload(resetPasswordDTO.getToken()).get("email", String.class);
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(
+                () ->
+                    new AppException(
+                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+
+    // Check if user is locked
+    if (user.isLocked()) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+    }
+
+    // Check if user is enabled
+    if (!user.isEnabled()) {
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
+    }
+
+    // Check if reset password token is valid
+    if (!resetPasswordDTO.getToken().equals(user.getVerificationToken())) {
+      throw new AppException(
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.getMessage());
+    }
+
+    // Update user's password
+    user.setPassword(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+    user.setVerificationToken(null);
     userRepository.save(user);
   }
 }

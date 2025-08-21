@@ -5,7 +5,8 @@ import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
-import com.vhskillpro.backend.modules.auth.dto.SendResetPasswordEmail;
+import com.vhskillpro.backend.modules.auth.dto.ResetPasswordDTO;
+import com.vhskillpro.backend.modules.auth.dto.SendResetPasswordEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
@@ -219,9 +220,9 @@ public class AuthV1Controller {
   /**
    * Handles the request to send a password reset email to the user.
    *
-   * <p>Expects a valid {@link SendResetPasswordEmail} object containing the user's email address.
-   * Delegates the email sending process to {@code authService}. Returns a success response if the
-   * email was sent successfully.
+   * <p>Expects a valid {@link SendResetPasswordEmailDTO} object containing the user's email
+   * address. Delegates the email sending process to {@code authService}. Returns a success response
+   * if the email was sent successfully.
    *
    * @param sendResetPasswordEmail the request body containing the user's email address
    * @return an {@link ApiResponse} indicating the result of the operation
@@ -242,16 +243,40 @@ public class AuthV1Controller {
       })
   @PostMapping("/send-reset-password-email")
   public ApiResponse<Void> sendResetPasswordEmail(
-      @Valid @RequestBody SendResetPasswordEmail sendResetPasswordEmail) {
+      @Valid @RequestBody SendResetPasswordEmailDTO sendResetPasswordEmail) {
     authService.sendResetPasswordEmail(sendResetPasswordEmail.getEmail());
     return ApiResponse.success(AuthMessages.RESET_PASSWORD_EMAIL_SENT.getMessage());
   }
 
-  // @GetMapping("/reset-password")
-  // public ApiResponse<Void> verifyResetPasswordToken(@RequestParam String token) {
-  //   // authService.verifyResetPasswordToken(token, email);
-  //   return ApiResponse.success(AuthMessages.VERIFY_RESET_PASSWORD_TOKEN_SUCCESS.getMessage());
-  // }
+  /**
+   * Handles the password reset request for a user.
+   *
+   * <p>Expects a {@link ResetPasswordDTO} object containing the necessary information to reset the
+   * user's password. Delegates the password reset logic to the {@code authService}. Returns a
+   * success response if the operation completes successfully.
+   *
+   * @param resetPasswordDTO the DTO containing password reset details, validated before processing
+   * @return an {@link ApiResponse} indicating the success of the password reset operation
+   */
+  @Operation(
+      summary = "Reset Password",
+      description = "Resets the user's password using the provided token and new password.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Password reset successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PostMapping("/reset-password")
+  public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
+    authService.resetPassword(resetPasswordDTO);
+    return ApiResponse.success(AuthMessages.RESET_PASSWORD_SUCCESS.getMessage());
+  }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}
 

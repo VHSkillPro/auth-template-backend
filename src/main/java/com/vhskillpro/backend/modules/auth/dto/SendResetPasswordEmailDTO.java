@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SendResetPasswordEmail {
+public class SendResetPasswordEmailDTO {
   @Schema(description = "Email address of the user to resend verification email")
   @NotBlank(message = "Email is required")
   @Email(message = "Email is invalid")
