@@ -3,8 +3,12 @@ package com.vhskillpro.backend.modules.auth;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
+import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
+import com.vhskillpro.backend.modules.auth.dto.ResetPasswordDTO;
+import com.vhskillpro.backend.modules.auth.dto.SendResetPasswordEmailDTO;
 import com.vhskillpro.backend.modules.auth.dto.SignInDTO;
+import com.vhskillpro.backend.modules.auth.dto.SignUpDTO;
 import com.vhskillpro.backend.modules.auth.dto.TokenDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -182,6 +187,158 @@ public class AuthV1Controller {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     ProfileDTO profile = authService.getProfile(userId);
     return DataApiResponse.success(profile, AuthMessages.PROFILE_FETCH_SUCCESS.getMessage());
+  }
+
+  /**
+   * Handles the refresh token request.
+   *
+   * <p>Accepts a valid {@link RefreshDTO} containing the refresh token and returns a new access
+   * token.
+   *
+   * @param refreshDTO the DTO containing the refresh token, validated for correctness
+   * @return a {@link DataApiResponse} containing the refreshed {@link TokenDTO} and a success
+   *     message
+   */
+  @Operation(
+      summary = "Refresh Token",
+      description = "Refreshes the access token using the provided refresh token.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Token refreshed successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = DataApiResponseTokenDTO.class)))
+      })
+  @PostMapping("/refresh")
+  public DataApiResponse<TokenDTO> refresh(@Valid @RequestBody RefreshDTO refreshDTO) {
+    TokenDTO tokenDTO = authService.refresh(refreshDTO);
+    return DataApiResponse.success(tokenDTO, AuthMessages.TOKEN_REFRESH_SUCCESS.getMessage());
+  }
+
+  /**
+   * Handles the request to send a password reset email to the user.
+   *
+   * <p>Expects a valid {@link SendResetPasswordEmailDTO} object containing the user's email
+   * address. Delegates the email sending process to {@code authService}. Returns a success response
+   * if the email was sent successfully.
+   *
+   * @param sendResetPasswordEmail the request body containing the user's email address
+   * @return an {@link ApiResponse} indicating the result of the operation
+   */
+  @Operation(
+      summary = "Send Reset Password Email",
+      description = "Sends a password reset email to the user.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Reset password email sent successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PostMapping("/send-reset-password-email")
+  public ApiResponse<Void> sendResetPasswordEmail(
+      @Valid @RequestBody SendResetPasswordEmailDTO sendResetPasswordEmail) {
+    authService.sendResetPasswordEmail(sendResetPasswordEmail.getEmail());
+    return ApiResponse.success(AuthMessages.RESET_PASSWORD_EMAIL_SENT.getMessage());
+  }
+
+  /**
+   * Handles the password reset request for a user.
+   *
+   * <p>Expects a {@link ResetPasswordDTO} object containing the necessary information to reset the
+   * user's password. Delegates the password reset logic to the {@code authService}. Returns a
+   * success response if the operation completes successfully.
+   *
+   * @param resetPasswordDTO the DTO containing password reset details, validated before processing
+   * @return an {@link ApiResponse} indicating the success of the password reset operation
+   */
+  @Operation(
+      summary = "Reset Password",
+      description = "Resets the user's password using the provided token and new password.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Password reset successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PostMapping("/reset-password")
+  public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
+    authService.resetPassword(resetPasswordDTO);
+    return ApiResponse.success(AuthMessages.RESET_PASSWORD_SUCCESS.getMessage());
+  }
+
+  /**
+   * Signs out the user by invalidating the provided refresh token.
+   *
+   * <p>This endpoint expects a refresh token as a request parameter and will invalidate it,
+   * effectively signing the user out of the system.
+   *
+   * @param refreshToken the refresh token to be invalidated
+   * @return an {@link ApiResponse} indicating successful sign out
+   */
+  @Operation(
+      summary = "Sign Out",
+      description = "Signs out the user by invalidating the provided refresh token.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User signed out successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @GetMapping("/sign-out")
+  public ApiResponse<Void> signOut(
+      @RequestHeader("Authorization") String bearerToken, @RequestParam String refreshToken) {
+    String accessToken = bearerToken.substring("Bearer ".length());
+    authService.signOut(accessToken, refreshToken);
+    return ApiResponse.success(AuthMessages.SIGN_OUT_SUCCESS.getMessage());
+  }
+
+  /**
+   * Handles user registration requests.
+   *
+   * <p>Receives a {@link SignUpDTO} containing user details, validates the input, and delegates the
+   * registration process to the {@code authService}. Returns a success response if registration is
+   * successful.
+   *
+   * @param signUpDTO the data transfer object containing user registration details
+   * @return an {@link ApiResponse} indicating the result of the registration process
+   */
+  @Operation(
+      summary = "Sign Up",
+      description = "Registers a new user with the provided details.",
+      responses = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "User registered successfully",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
+      })
+  @PostMapping("/sign-up")
+  public ApiResponse<Void> signUp(@Valid @RequestBody SignUpDTO signUpDTO) {
+    authService.signUp(signUpDTO);
+    return ApiResponse.success(AuthMessages.SIGN_UP_SUCCESS.getMessage());
   }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}

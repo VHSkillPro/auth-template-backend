@@ -52,6 +52,10 @@ public class WebSecurityConfig {
     "/api/v1/auth/sign-in",
     "/api/v1/auth/resend-verification-email",
     "/api/v1/auth/verify-email",
+    "/api/v1/auth/refresh",
+    "/api/v1/auth/send-reset-password-email",
+    "/api/v1/auth/reset-password",
+    "/api/v1/auth/sign-up",
     "/swagger-ui/**",
     "/v3/api-docs/**"
   };

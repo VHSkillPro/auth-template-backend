@@ -1,5 +1,6 @@
 package com.vhskillpro.backend.filter;
 
+import com.vhskillpro.backend.modules.auth.BlacklistTokenRepository;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.UserService;
 import com.vhskillpro.backend.utils.jwt.JwtService;
@@ -18,10 +19,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserService userService;
+  private final BlacklistTokenRepository blacklistTokenRepository;
 
-  public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+  public JwtAuthenticationFilter(
+      JwtService jwtService,
+      UserService userService,
+      BlacklistTokenRepository blacklistTokenRepository) {
     this.jwtService = jwtService;
     this.userService = userService;
+    this.blacklistTokenRepository = blacklistTokenRepository;
   }
 
   @Override
@@ -34,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (accessToken != null
         && jwtService.isValidToken(accessToken)
+        && !blacklistTokenRepository.existsById(accessToken)
         && SecurityContextHolder.getContext().getAuthentication() == null) {
       // Get email from token
       String email = jwtService.getPayload(accessToken).get("email", String.class);
