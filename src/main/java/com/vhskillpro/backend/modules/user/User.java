@@ -1,8 +1,10 @@
 package com.vhskillpro.backend.modules.user;
 
+import com.vhskillpro.backend.common.converter.LowercaseConverter;
 import com.vhskillpro.backend.common.entity.BaseEntity;
 import com.vhskillpro.backend.modules.role.Role;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -21,6 +23,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity {
   @Column(name = "email", unique = true, nullable = false)
+  @Convert(converter = LowercaseConverter.class)
   private String email;
 
   @Column(name = "password", nullable = false)
