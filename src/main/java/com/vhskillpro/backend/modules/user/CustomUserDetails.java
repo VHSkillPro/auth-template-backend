@@ -37,7 +37,7 @@ public class CustomUserDetails implements UserDetails {
     if (superuser) {
       return List.of(new SimpleGrantedAuthority("all:all"));
     }
-    return authorities;
+    return authorities == null ? List.of() : authorities;
   }
 
   public boolean isEnabled() {
