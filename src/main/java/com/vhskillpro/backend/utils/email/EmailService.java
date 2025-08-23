@@ -34,8 +34,7 @@ public class EmailService {
   public void sendVerificationEmail(String to, String token) {
     try {
       String subject = "Email Verification";
-      String verificationUrl =
-          "http://" + DOMAIN + ":" + PORT + "/api/v1/auth/verify-email?token=" + token;
+      String verificationUrl = FRONTEND_URL + "/verify-email?token=" + token;
 
       SimpleMailMessage message = new SimpleMailMessage();
       message.setTo(to);
