@@ -2,7 +2,6 @@ package com.vhskillpro.backend.modules.role.dto;
 
 import com.vhskillpro.backend.common.validation.constraints.PermissionsExist;
 import com.vhskillpro.backend.common.validation.constraints.RoleNameNotExisted;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -15,23 +14,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "Data Transfer Object for creating a new role")
 public class RoleCreateDTO {
-  @Schema(description = "Name of the role", example = "admin")
-  @NotBlank(message = "Name is required")
-  @RoleNameNotExisted(message = "Role name already exists")
+  @NotBlank(message = "ROLE_NAME_REQUIRED")
+  @RoleNameNotExisted()
   private String name;
 
-  @Schema(description = "Title of the role", example = "Administrator")
-  @NotBlank(message = "Title is required")
+  @NotBlank(message = "ROLE_TITLE_REQUIRED")
   private String title;
 
-  @Schema(description = "Description of the role", example = "Full access to all resources")
-  @NotNull(message = "Description is not null")
+  @NotNull(message = "ROLE_DESCRIPTION_REQUIRED")
   private String description;
 
-  @Schema(description = "List of permission IDs associated with the role", example = "[1, 2, 3]")
-  @NotNull(message = "Permission IDs are not null")
-  @PermissionsExist(message = "One or more permissions do not exist")
+  @NotNull(message = "ROLE_PERMISSION_IDS_REQUIRED")
+  @PermissionsExist()
   private List<Long> permissionIds;
 }

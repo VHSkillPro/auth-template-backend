@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = RoleNameNotExistedValidator.class)
 public @interface RoleNameNotExisted {
-  String message() default "Role name already exists.";
+  String message() default "ROLE_ALREADY_EXISTS";
 
   Class<?>[] groups() default {};
 

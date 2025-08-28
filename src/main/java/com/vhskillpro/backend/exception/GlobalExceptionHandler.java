@@ -5,6 +5,8 @@ import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.BadRequestResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -60,7 +62,13 @@ public class GlobalExceptionHandler {
    * @param ex the {@code InsufficientAuthenticationException} encountered
    * @return an {@code ApiResponse<Void>} indicating unauthorized access
    */
-  @Hidden
+  @io.swagger.v3.oas.annotations.responses.ApiResponse(
+      responseCode = "401",
+      description = "UNAUTHORIZED",
+      content =
+          @Content(
+              mediaType = "application/json",
+              schema = @Schema(implementation = ApiResponse.class)))
   @ExceptionHandler(InsufficientAuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiResponse<Void> handleInsufficientAuthenticationException(

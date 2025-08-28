@@ -56,13 +56,6 @@ public class PermissionV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = PagedApiResponsePermissionDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "403",
             description = "FORBIDDEN",
             content =

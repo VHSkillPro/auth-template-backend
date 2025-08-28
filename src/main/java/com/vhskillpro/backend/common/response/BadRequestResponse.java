@@ -1,6 +1,5 @@
 package com.vhskillpro.backend.common.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -13,12 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "Response for bad request errors")
 public class BadRequestResponse {
-  @Schema(
-      description =
-          "Map of field errors where the key is the field name and the value is the error message",
-      example = "{\"username\": \"Username is required\", \"email\": \"Email format is invalid\"}")
   private Map<String, String> errors;
 
   /**
