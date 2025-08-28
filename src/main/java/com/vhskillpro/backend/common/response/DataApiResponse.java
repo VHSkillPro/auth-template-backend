@@ -1,6 +1,5 @@
 package com.vhskillpro.backend.common.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,9 +12,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "API response containing a single data item")
 public class DataApiResponse<T> extends ApiResponse<T> {
-  @Schema(description = "Data returned by the API call")
   private T data;
 
   /**

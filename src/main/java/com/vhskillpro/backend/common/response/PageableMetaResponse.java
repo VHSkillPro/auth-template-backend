@@ -1,7 +1,6 @@
 package com.vhskillpro.backend.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.domain.Page;
@@ -9,21 +8,11 @@ import org.springframework.data.domain.Page;
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Pagination metadata for the response")
 public class PageableMetaResponse {
-  @Schema(description = "Current page number", example = "0")
   private int page;
-
-  @Schema(description = "Size of the page", example = "20")
   private int size;
-
-  @Schema(description = "Total number of elements", example = "100")
   private long total;
-
-  @Schema(description = "Total number of pages", example = "5")
   private long pages;
-
-  @Schema(description = "Sort order applied to the results", example = "name,asc")
   private String sort;
 
   /**

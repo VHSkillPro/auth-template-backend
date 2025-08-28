@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/permission")
-@Tag(name = "Permission (V1)", description = "APIs for retrieving system permissions")
+@Tag(name = "Permission (V1)", description = "APIs for managing permissions")
 public class PermissionV1Controller {
   private PermissionService permissionService;
 
@@ -38,27 +38,37 @@ public class PermissionV1Controller {
    *     success message
    */
   @Operation(
-      summary = "Get paginated permissions list",
-      description =
-          "Fetches a list of permissions with optional keyword-based search and pagination. "
-              + "If no keyword is provided, all permissions are returned.",
+      summary = "Get list permissions",
       parameters = {
-        @Parameter(name = "keyword", description = "Search keyword to filter", example = "read"),
-        @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
-        @Parameter(name = "size", description = "Number of items per page", example = "10"),
+        @Parameter(name = "keyword", description = "Search keyword to filter"),
+        @Parameter(name = "page", description = "Page number (0-based index)"),
+        @Parameter(name = "size", description = "Number of items per page"),
         @Parameter(
             name = "sort",
-            description = "Sorting criteria in the format: property(,asc|desc)",
-            example = "name,asc")
+            description = "Sorting criteria in the format: property(,asc|desc)")
       },
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Permissions list retrieved successfully",
+            description = "PERMISSION_INDEX_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = PagedApiResponsePermissionDTO.class)))
+                    schema = @Schema(implementation = PagedApiResponsePermissionDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiResponse.class)))
       })
   @GetMapping
   public PagedApiResponse<PermissionDTO> index(
@@ -66,7 +76,7 @@ public class PermissionV1Controller {
       @Parameter(hidden = true) Pageable pageable) {
     Page<PermissionDTO> permissions = permissionService.findAll(keyword, pageable);
     return PagedApiResponse.success(
-        permissions, PermissionMessages.PERMISSION_INDEX_SUCCESS.getMessage());
+        permissions, PermissionMessages.PERMISSION_INDEX_SUCCESS.toString());
   }
 
   /**
@@ -77,22 +87,19 @@ public class PermissionV1Controller {
    * @throws AppException if the permission with the specified ID is not found
    */
   @Operation(
-      summary = "Get permission by ID",
-      description = "Fetches the details of a specific permission by its ID.",
-      parameters = {
-        @Parameter(name = "id", description = "ID of the permission to retrieve", example = "1")
-      },
+      summary = "Get permission detail by ID",
+      parameters = {@Parameter(name = "id", description = "Permission ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Permission retrieved successfully",
+            description = "PERMISSION_SHOW_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = DataApiResponsePermissionDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
-            description = "Permission not found",
+            description = "PERMISSION_NOT_FOUND",
             content =
                 @Content(
                     mediaType = "application/json",
@@ -106,10 +113,9 @@ public class PermissionV1Controller {
             .orElseThrow(
                 () ->
                     new AppException(
-                        HttpStatus.NOT_FOUND,
-                        PermissionMessages.PERMISSION_NOT_FOUND.getMessage()));
+                        HttpStatus.NOT_FOUND, PermissionMessages.PERMISSION_NOT_FOUND.toString()));
     return DataApiResponse.success(
-        permissionDTO, PermissionMessages.PERMISSION_SHOW_SUCCESS.getMessage());
+        permissionDTO, PermissionMessages.PERMISSION_SHOW_SUCCESS.toString());
   }
 
   private class PagedApiResponsePermissionDTO extends PagedApiResponse<PermissionDTO> {}

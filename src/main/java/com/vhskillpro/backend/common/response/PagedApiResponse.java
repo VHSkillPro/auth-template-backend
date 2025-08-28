@@ -1,6 +1,5 @@
 package com.vhskillpro.backend.common.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,12 +14,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "API response containing a paginated list of data items")
 public class PagedApiResponse<T> extends ApiResponse<T> {
-  @Schema(description = "Data returned by the API call")
   private List<T> data;
-
-  @Schema(description = "Pagination metadata")
   private PageableMetaResponse meta;
 
   /**

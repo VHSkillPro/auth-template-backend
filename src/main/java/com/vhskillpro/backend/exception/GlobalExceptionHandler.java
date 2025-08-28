@@ -4,6 +4,7 @@ import com.vhskillpro.backend.common.constants.MessageConstants;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.BadRequestResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ public class GlobalExceptionHandler {
    * @param ex the {@link AppException} instance that was thrown
    * @return an {@link ApiResponse} containing information about the exception
    */
+  @Hidden
   @ExceptionHandler(AppException.class)
   public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
     return ResponseEntity.status(ex.getStatusCode()).body(ApiResponse.from(ex));
@@ -41,6 +43,7 @@ public class GlobalExceptionHandler {
    * @param ex the exception containing validation errors
    * @return a {@link DataApiResponse} containing the bad request details and error message
    */
+  @Hidden
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public DataApiResponse<BadRequestResponse> handleMethodArgumentNotValidException(
@@ -57,14 +60,7 @@ public class GlobalExceptionHandler {
    * @param ex the {@code InsufficientAuthenticationException} encountered
    * @return an {@code ApiResponse<Void>} indicating unauthorized access
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @Hidden
   @ExceptionHandler(InsufficientAuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiResponse<Void> handleInsufficientAuthenticationException(
@@ -80,14 +76,7 @@ public class GlobalExceptionHandler {
    * @param ex the {@link AuthorizationDeniedException} instance
    * @return an {@link ApiResponse} with forbidden status and the exception message
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "403",
-      description = "Forbidden",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @Hidden
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ApiResponse<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
@@ -103,7 +92,7 @@ public class GlobalExceptionHandler {
    */
   @io.swagger.v3.oas.annotations.responses.ApiResponse(
       responseCode = "500",
-      description = "Internal Server Error",
+      description = "INTERNAL_SERVER_ERROR",
       content =
           @io.swagger.v3.oas.annotations.media.Content(
               mediaType = "application/json",
