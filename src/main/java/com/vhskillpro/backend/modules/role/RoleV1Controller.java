@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/role")
-@Tag(name = "Role (V1)", description = "APIs for CRUD operations on roles")
+@Tag(name = "Role (V1)", description = "APIs for managing roles")
 public class RoleV1Controller {
   private RoleService roleService;
 
