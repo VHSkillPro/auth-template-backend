@@ -1,7 +1,6 @@
 package com.vhskillpro.backend.modules.user.dto;
 
 import com.vhskillpro.backend.common.validation.constraints.RoleExist;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,17 +11,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Data Transfer Object for updating user information")
 public class UserUpdateDTO {
-  @NotNull(message = "Last name is not null")
+  @NotNull(message = "USER_LAST_NAME_REQUIRED")
   private String lastName;
 
-  @NotNull(message = "First name is not null")
+  @NotNull(message = "USER_FIRST_NAME_REQUIRED")
   private String firstName;
 
-  @NotNull(message = "Locked status is not null")
+  @NotNull(message = "USER_LOCKED_STATUS_REQUIRED")
   private Boolean locked;
 
-  @RoleExist(message = "Role does not exist")
-  private Long roleId;
+  @RoleExist() private Long roleId;
 }

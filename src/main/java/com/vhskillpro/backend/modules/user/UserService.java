@@ -126,8 +126,7 @@ public class UserService implements UserDetailsService {
             .findById(userId)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Assign updated values
     user.setFirstName(userUpdateDTO.getFirstName());
@@ -162,7 +161,7 @@ public class UserService implements UserDetailsService {
   @CacheEvict(value = "userDetails", key = "#userId")
   public void delete(Long userId) {
     if (!userRepository.existsById(userId)) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString());
     }
 
     userRepository.deleteById(userId);
@@ -191,7 +190,7 @@ public class UserService implements UserDetailsService {
         userRepository
             .findByEmail(username)
             .orElseThrow(
-                () -> new UsernameNotFoundException(UserMessages.USER_NOT_FOUND.getMessage()));
+                () -> new UsernameNotFoundException(UserMessages.USER_NOT_FOUND.toString()));
 
     CustomUserDetails userDetails =
         CustomUserDetails.builder()

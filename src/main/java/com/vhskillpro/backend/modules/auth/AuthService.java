@@ -85,12 +85,12 @@ public class AuthService {
 
     // If user is not enabled
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // If user is locked
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_LOCKED.toString());
     }
 
     // Check if the password matches
@@ -137,13 +137,11 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is already enabled
     if (user.isEnabled()) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.getMessage());
+      throw new AppException(HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.toString());
     }
 
     // Check if verification token already exists
@@ -193,8 +191,7 @@ public class AuthService {
             .findById(userId)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if verification token is valid
     if (user.getVerificationToken() == null || !user.getVerificationToken().equals(token)) {
@@ -204,8 +201,7 @@ public class AuthService {
 
     // Check if user is already enabled
     if (user.isEnabled()) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.getMessage());
+      throw new AppException(HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.toString());
     }
 
     // Enable the user and clear the verification token
@@ -316,16 +312,15 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is locked or disabled
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.toString());
     }
 
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // Check if a reset password token is already sent
@@ -379,17 +374,16 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is locked
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.toString());
     }
 
     // Check if user is enabled
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // Check if reset password token is valid

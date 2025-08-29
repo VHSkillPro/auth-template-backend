@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/user")
-@Tag(name = "User (V1)", description = "APIs for CRUD operations on users")
+@Tag(name = "User (V1)", description = "APIs for managing users")
 public class UserV1Controller {
   private final UserService userService;
 
@@ -48,46 +48,62 @@ public class UserV1Controller {
    * @return a paginated response containing user data and a success message
    */
   @Operation(
-      summary = "Get a paginated list of users",
-      description = "Retrieves a paginated list of users based on filter criteria.",
+      summary = "Get list users",
       parameters = {
         @Parameter(name = "keyword", description = "Search keyword for user retrieval"),
-        @Parameter(
-            name = "enabled",
-            description = "Filter by enabled status",
-            example = "true|false"),
-        @Parameter(
-            name = "locked",
-            description = "Filter by locked status",
-            example = "true|false"),
-        @Parameter(
-            name = "superuser",
-            description = "Filter by superuser status",
-            example = "true|false"),
-        @Parameter(name = "roleName", description = "Filter by role name", example = "admin"),
-        @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
-        @Parameter(name = "size", description = "Number of items per page", example = "10"),
+        @Parameter(name = "enabled", description = "Filter by enabled status"),
+        @Parameter(name = "locked", description = "Filter by locked status"),
+        @Parameter(name = "superuser", description = "Filter by superuser status"),
+        @Parameter(name = "roleName", description = "Filter by role name"),
+        @Parameter(name = "page", description = "Page number (0-based index)"),
+        @Parameter(name = "size", description = "Number of items per page"),
         @Parameter(
             name = "sort",
-            description = "Sorting criteria in the format: property(,asc|desc)",
-            example = "name,asc")
+            description = "Sorting criteria in the format: property(,asc|desc)")
       },
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Users retrieved successfully",
+            description = "USER_INDEX_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = PagedApiResponseUserDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "BAD_REQUEST",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
       })
   @GetMapping
   public PagedApiResponse<UserDTO> index(
       @Parameter(hidden = true) UserFilterDTO filter, @Parameter(hidden = true) Pageable pageable) {
     Page<UserDTO> userDTOs = userService.findAll(filter, pageable);
-    return PagedApiResponse.success(userDTOs, UserMessages.USER_INDEX_SUCCESS.getMessage());
+    return PagedApiResponse.success(userDTOs, UserMessages.USER_INDEX_SUCCESS.toString());
   }
 
   /**
@@ -98,13 +114,12 @@ public class UserV1Controller {
    * @throws AppException if the user with the specified id is not found
    */
   @Operation(
-      summary = "Get user by ID",
-      description = "Retrieves a user by their unique identifier.",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      summary = "Get user detail by ID",
+      parameters = {@Parameter(name = "id", description = "User ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User retrieved successfully",
+            description = "USER_SHOW_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -112,8 +127,26 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = DataApiResponseUserDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
-            description = "User not found",
+            description = "USER_NOT_FOUND",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -128,9 +161,8 @@ public class UserV1Controller {
             .findById(id)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
-    return DataApiResponse.success(userDTO, UserMessages.USER_SHOW_SUCCESS.getMessage());
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
+    return DataApiResponse.success(userDTO, UserMessages.USER_SHOW_SUCCESS.toString());
   }
 
   /**
@@ -142,10 +174,8 @@ public class UserV1Controller {
    */
   @Operation(
       summary = "Create a new user",
-      description = "Creates a new user with the provided details.",
       requestBody =
           @io.swagger.v3.oas.annotations.parameters.RequestBody(
-              description = "User creation details",
               content =
                   @io.swagger.v3.oas.annotations.media.Content(
                       mediaType = "application/json",
@@ -155,7 +185,34 @@ public class UserV1Controller {
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "201",
-            description = "User created successfully",
+            description = "USER_CREATE_SUCCESS",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "BAD_REQUEST",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -166,7 +223,7 @@ public class UserV1Controller {
   @PostMapping()
   public ApiResponse<Void> create(@Valid @RequestBody UserCreateDTO userCreateDTO) {
     userService.create(userCreateDTO);
-    return ApiResponse.success(UserMessages.USER_CREATE_SUCCESS.getMessage());
+    return ApiResponse.success(UserMessages.USER_CREATE_SUCCESS.toString());
   }
 
   /**
@@ -178,11 +235,9 @@ public class UserV1Controller {
    */
   @Operation(
       summary = "Update user by ID",
-      description = "Updates the user information for the specified user ID.",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      parameters = {@Parameter(name = "id", description = "User ID")},
       requestBody =
           @io.swagger.v3.oas.annotations.parameters.RequestBody(
-              description = "User update details",
               content =
                   @io.swagger.v3.oas.annotations.media.Content(
                       mediaType = "application/json",
@@ -192,29 +247,91 @@ public class UserV1Controller {
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User updated successfully",
+            description = "USER_UPDATE_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class)))
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "BAD_REQUEST",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
       })
   @PutMapping("/{id}")
   public ApiResponse<Void> update(
       @PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
     userService.update(id, userUpdateDTO);
-    return ApiResponse.success(UserMessages.USER_UPDATE_SUCCESS.getMessage());
+    return ApiResponse.success(UserMessages.USER_UPDATE_SUCCESS.toString());
   }
 
   @Operation(
       summary = "Delete user by ID",
-      description = "Deletes the user with the specified ID.",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      parameters = {@Parameter(name = "id", description = "User ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User deleted successfully",
+            description = "USER_DELETE_SUCCESS",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "UNAUTHORIZED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "FORBIDDEN",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -226,7 +343,7 @@ public class UserV1Controller {
   @ResponseStatus(HttpStatus.OK)
   public ApiResponse<Void> delete(@PathVariable Long id) {
     userService.delete(id);
-    return ApiResponse.success(UserMessages.USER_DELETE_SUCCESS.getMessage());
+    return ApiResponse.success(UserMessages.USER_DELETE_SUCCESS.toString());
   }
 
   private class PagedApiResponseUserDTO extends PagedApiResponse<UserDTO> {}
