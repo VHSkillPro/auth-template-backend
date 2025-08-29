@@ -3,6 +3,9 @@ package com.vhskillpro.backend.modules.user;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
+import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
+import com.vhskillpro.backend.common.swagger.ForbiddenApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.user.dto.UserCreateDTO;
 import com.vhskillpro.backend.modules.user.dto.UserDTO;
@@ -70,35 +73,10 @@ public class UserV1Controller {
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = PagedApiResponseUserDTO.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "BAD_REQUEST",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
+                            implementation = PagedApiResponseUserDTO.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping
   public PagedApiResponse<UserDTO> index(
       @Parameter(hidden = true) UserFilterDTO filter, @Parameter(hidden = true) Pageable pageable) {
@@ -127,24 +105,6 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = DataApiResponseUserDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "USER_NOT_FOUND",
             content =
@@ -154,6 +114,8 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping("/{id}")
   public DataApiResponse<UserDTO> show(@PathVariable Long id) {
     UserDTO userDTO =
@@ -192,34 +154,10 @@ public class UserV1Controller {
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "BAD_REQUEST",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PostMapping()
   public ApiResponse<Void> create(@Valid @RequestBody UserCreateDTO userCreateDTO) {
     userService.create(userCreateDTO);
@@ -255,33 +193,6 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "BAD_REQUEST",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "USER_NOT_FOUND",
             content =
@@ -291,6 +202,9 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PutMapping("/{id}")
   public ApiResponse<Void> update(
       @PathVariable Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
@@ -312,24 +226,6 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "401",
-            description = "UNAUTHORIZED",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "USER_NOT_FOUND",
             content =
@@ -339,6 +235,8 @@ public class UserV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
   public ApiResponse<Void> delete(@PathVariable Long id) {
