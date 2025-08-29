@@ -16,5 +16,6 @@ import java.lang.annotation.Target;
     content =
         @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = ApiResponse.class)))
+            schema =
+                @Schema(implementation = com.vhskillpro.backend.common.response.ApiResponse.class)))
 public @interface InternalServerErrorApiResponse {}

@@ -1,5 +1,7 @@
 package com.vhskillpro.backend.common.swagger;
 
+import com.vhskillpro.backend.common.response.BadRequestResponse;
+import com.vhskillpro.backend.common.response.DataApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,11 +13,12 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @ApiResponse(
-    responseCode = "401",
-    description = "UNAUTHORIZED",
+    responseCode = "400",
+    description = "BAD_REQUEST",
     content =
         @Content(
             mediaType = "application/json",
-            schema =
-                @Schema(implementation = com.vhskillpro.backend.common.response.ApiResponse.class)))
-public @interface UnauthorizedApiResponse {}
+            schema = @Schema(implementation = BadRequestDataApiResponse.class)))
+public @interface BadRequestApiResponse {}
+
+class BadRequestDataApiResponse extends DataApiResponse<BadRequestResponse> {}

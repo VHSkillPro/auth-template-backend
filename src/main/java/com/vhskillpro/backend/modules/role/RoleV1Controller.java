@@ -3,7 +3,9 @@ package com.vhskillpro.backend.modules.role;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
-import com.vhskillpro.backend.common.swagger.BadRequestDataApiResponse;
+import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
+import com.vhskillpro.backend.common.swagger.ForbiddenApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
@@ -65,14 +67,9 @@ public class RoleV1Controller {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = PagedApiResponseRoleDTO.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping
   public PagedApiResponse<RoleDTO> index(
       @RequestParam(defaultValue = "") String keyword,
@@ -100,13 +97,6 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = DataApiResponseRoleDetailDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "ROLE_NOT_FOUND",
             content =
@@ -114,6 +104,8 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping("/{id}")
   public DataApiResponse<RoleDetailDTO> show(@PathVariable Long id) {
     RoleDetailDTO roleDTO =
@@ -141,22 +133,11 @@ public class RoleV1Controller {
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "BAD_REQUEST",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = BadRequestDataApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ApiResponse<Void> create(@Valid @RequestBody RoleCreateDTO roleCreateDTO) {
@@ -183,20 +164,6 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "BAD_REQUEST",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = BadRequestDataApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "ROLE_NOT_FOUND",
             content =
@@ -204,6 +171,9 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PutMapping("/{id}")
   public ApiResponse<Void> update(
       @PathVariable Long id, @Valid @RequestBody RoleUpdateDTO roleUpdateDTO) {
@@ -230,13 +200,6 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "ROLE_NOT_FOUND",
             content =
@@ -251,6 +214,8 @@ public class RoleV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @DeleteMapping("/{id}")
   public ApiResponse<Void> delete(@PathVariable Long id) {
     roleService.delete(id);
