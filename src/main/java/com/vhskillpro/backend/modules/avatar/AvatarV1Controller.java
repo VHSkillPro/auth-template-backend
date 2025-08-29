@@ -2,6 +2,7 @@ package com.vhskillpro.backend.modules.avatar;
 
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
 import com.vhskillpro.backend.modules.avatar.dto.AvatarDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.dto.UserUploadAvatarDTO;
@@ -41,11 +42,9 @@ public class AvatarV1Controller {
    */
   @Operation(
       summary = "Upload user avatar",
-      description = "Uploads a user's avatar image. Only users ",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      parameters = {@Parameter(name = "id", description = "User ID")},
       requestBody =
           @io.swagger.v3.oas.annotations.parameters.RequestBody(
-              description = "User avatar upload details",
               content =
                   @io.swagger.v3.oas.annotations.media.Content(
                       mediaType = "multipart/form-data",
@@ -55,30 +54,22 @@ public class AvatarV1Controller {
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User avatar uploaded successfully",
+            description = "AVATAR_UPLOAD_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Invalid file format or size",
-            content =
-                @io.swagger.v3.oas.annotations.media.Content(
-                    mediaType = "application/json",
-                    schema =
-                        @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
   @PutMapping(value = "/avatar", consumes = "multipart/form-data")
   public ApiResponse<Void> uploadAvatar(
       Authentication authentication,
       @Valid @ModelAttribute UserUploadAvatarDTO userUploadAvatarDTO) {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     avatarService.uploadAvatar(userId, userUploadAvatarDTO.getAvatarFile());
-    return ApiResponse.success(AvatarMessages.AVATAR_UPLOAD_SUCCESS.getMessage());
+    return ApiResponse.success(AvatarMessages.AVATAR_UPLOAD_SUCCESS.toString());
   }
 
   /**
@@ -89,12 +80,11 @@ public class AvatarV1Controller {
    */
   @Operation(
       summary = "Get user avatar",
-      description = "Retrieves the avatar of a user by their ID",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      parameters = {@Parameter(name = "id", description = "User ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User avatar retrieved successfully",
+            description = "AVATAR_GET_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -106,7 +96,7 @@ public class AvatarV1Controller {
   public DataApiResponse<AvatarDTO> getAvatar(Authentication authentication) {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     AvatarDTO avatarDTO = avatarService.getAvatar(userId);
-    return DataApiResponse.success(avatarDTO, AvatarMessages.AVATAR_GET_SUCCESS.getMessage());
+    return DataApiResponse.success(avatarDTO, AvatarMessages.AVATAR_GET_SUCCESS.toString());
   }
 
   /**
@@ -120,12 +110,11 @@ public class AvatarV1Controller {
    */
   @Operation(
       summary = "Delete user avatar",
-      description = "Deletes the avatar of a user by their ID",
-      parameters = {@Parameter(name = "id", description = "Unique identifier of the user")},
+      parameters = {@Parameter(name = "id", description = "User ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User avatar deleted successfully",
+            description = "AVATAR_DELETE_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -138,7 +127,7 @@ public class AvatarV1Controller {
   public ApiResponse<Void> deleteAvatar(Authentication authentication) {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     avatarService.deleteAvatar(userId);
-    return ApiResponse.success(AvatarMessages.AVATAR_DELETE_SUCCESS.getMessage());
+    return ApiResponse.success(AvatarMessages.AVATAR_DELETE_SUCCESS.toString());
   }
 
   private class DataApiResponseAvatarDTO extends DataApiResponse<AvatarDTO> {}
