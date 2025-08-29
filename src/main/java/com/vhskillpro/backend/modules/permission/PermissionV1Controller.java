@@ -3,6 +3,8 @@ package com.vhskillpro.backend.modules.permission;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
+import com.vhskillpro.backend.common.swagger.ForbiddenApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.permission.dto.PermissionDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,14 +57,9 @@ public class PermissionV1Controller {
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = PagedApiResponsePermissionDTO.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "403",
-            description = "FORBIDDEN",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping
   public PagedApiResponse<PermissionDTO> index(
       @RequestParam(defaultValue = "") String keyword,
@@ -98,6 +95,8 @@ public class PermissionV1Controller {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping("/{id}")
   public DataApiResponse<PermissionDTO> show(@PathVariable Long id) {
     PermissionDTO permissionDTO =

@@ -4,9 +4,8 @@ import com.vhskillpro.backend.common.constants.MessageConstants;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.BadRequestResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.swagger.InternalServerErrorApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -51,7 +50,7 @@ public class GlobalExceptionHandler {
   public DataApiResponse<BadRequestResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException ex) {
     BadRequestResponse response = BadRequestResponse.from(ex);
-    return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.getMessage());
+    return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.toString());
   }
 
   /**
@@ -62,18 +61,12 @@ public class GlobalExceptionHandler {
    * @param ex the {@code InsufficientAuthenticationException} encountered
    * @return an {@code ApiResponse<Void>} indicating unauthorized access
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "401",
-      description = "UNAUTHORIZED",
-      content =
-          @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = ApiResponse.class)))
+  @Hidden
   @ExceptionHandler(InsufficientAuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiResponse<Void> handleInsufficientAuthenticationException(
       InsufficientAuthenticationException ex) {
-    return ApiResponse.unauthorized(ex.getMessage());
+    return ApiResponse.unauthorized(MessageConstants.UNAUTHORIZED.toString());
   }
 
   /**
@@ -88,7 +81,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ApiResponse<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
-    return ApiResponse.forbidden(ex.getMessage());
+    return ApiResponse.forbidden(MessageConstants.ACCESS_DENIED.toString());
   }
 
   /**
@@ -98,18 +91,11 @@ public class GlobalExceptionHandler {
    * @param ex the exception that was thrown
    * @return an {@link ApiResponse} indicating an internal server error
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "500",
-      description = "INTERNAL_SERVER_ERROR",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @InternalServerErrorApiResponse
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiResponse<Void> handleException(Exception ex) {
-    logger.error(MessageConstants.INTERNAL_SERVER_ERROR.getMessage(), ex);
-    return ApiResponse.internalServerError(MessageConstants.INTERNAL_SERVER_ERROR.getMessage());
+    logger.error(MessageConstants.INTERNAL_SERVER_ERROR.toString(), ex);
+    return ApiResponse.internalServerError(MessageConstants.INTERNAL_SERVER_ERROR.toString());
   }
 }
