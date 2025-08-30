@@ -2,50 +2,38 @@ package com.vhskillpro.backend.modules.auth;
 
 public enum AuthMessages {
   // Profile
-  PROFILE_FETCH_SUCCESS("Profile fetched successfully"),
+  PROFILE_GET_SUCCESS,
 
   // Sign in
-  SIGN_IN_SUCCESS("Sign-in successfully"),
-  EMAIL_OR_PASSWORD_INVALID("Email or password is invalid"),
+  SIGN_IN_SUCCESS,
+  EMAIL_OR_PASSWORD_INVALID,
 
   // Refresh
-  TOKEN_REFRESH_SUCCESS("Token refresh successfully"),
-  INVALID_REFRESH_TOKEN("Invalid refresh token."),
-  REFRESH_TOKEN_BLACKLISTED("Refresh token is blacklisted."),
+  REFRESH_SUCCESS,
+  INVALID_REFRESH_TOKEN,
+  REFRESH_TOKEN_BLACKLISTED,
 
   // Verification
-  EMAIL_VERIFICATION_SUCCESS("Email verification successfully"),
-  VERIFICATION_TOKEN_NOT_FOUND("Verification token not found."),
-  INVALID_VERIFICATION_TOKEN("Invalid verification token."),
+  EMAIL_VERIFY_SUCCESS,
+  VERIFICATION_TOKEN_NOT_FOUND,
+  INVALID_VERIFICATION_TOKEN,
 
   // Send verification email
-  RESEND_VERIFICATION_EMAIL_SUCCESS("Verification email resent successfully"),
-  EMAIL_SENDING_FAILED("Failed to send email."),
-  VERIFICATION_TOKEN_ALREADY_SENT(
-      "Verification token has already been sent. Please re-send the email later."),
+  SEND_VERIFICATION_EMAIL_SUCCESS,
+  EMAIL_SENDING_FAILED,
+  VERIFICATION_TOKEN_ALREADY_SENT,
 
   // Send reset password email
-  RESET_PASSWORD_EMAIL_SENT("Reset password email sent successfully"),
-  RESET_PASSWORD_TOKEN_ALREADY_SENT(
-      "Reset password token has already been sent. Please re-send the email later."),
+  RESET_PASSWORD_EMAIL_SENT,
+  RESET_PASSWORD_TOKEN_ALREADY_SENT,
 
   // Reset password
-  RESET_PASSWORD_SUCCESS("Reset password successfully"),
-  INVALID_RESET_PASSWORD_TOKEN("Invalid reset password token."),
+  RESET_PASSWORD_SUCCESS,
+  INVALID_RESET_PASSWORD_TOKEN,
 
   // Sign out
-  SIGN_OUT_SUCCESS("Sign-out successfully"),
+  SIGN_OUT_SUCCESS,
 
   // Sign up
-  SIGN_UP_SUCCESS("Sign-up successfully");
-
-  private final String message;
-
-  AuthMessages(String message) {
-    this.message = message;
-  }
-
-  public String getMessage() {
-    return message;
-  }
+  SIGN_UP_SUCCESS;
 }

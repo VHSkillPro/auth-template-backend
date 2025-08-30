@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = RoleExistValidator.class)
 public @interface RoleExist {
-  String message() default "Role do not exist.";
+  String message() default "ROLE_NOT_FOUND";
 
   Class<?>[] groups() default {};
 

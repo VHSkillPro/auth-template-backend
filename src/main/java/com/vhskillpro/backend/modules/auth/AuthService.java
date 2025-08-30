@@ -23,7 +23,6 @@ import com.vhskillpro.backend.utils.jwt.claims.VerificationTokenExtraClaims;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.MailException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -81,22 +80,22 @@ public class AuthService {
                 () ->
                     new AppException(
                         HttpStatus.UNAUTHORIZED,
-                        AuthMessages.EMAIL_OR_PASSWORD_INVALID.getMessage()));
+                        AuthMessages.EMAIL_OR_PASSWORD_INVALID.toString()));
 
     // If user is not enabled
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // If user is locked
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.UNAUTHORIZED, UserMessages.USER_LOCKED.toString());
     }
 
     // Check if the password matches
     if (!passwordEncoder.matches(signInDTO.getPassword(), user.getPassword())) {
       throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.EMAIL_OR_PASSWORD_INVALID.getMessage());
+          HttpStatus.UNAUTHORIZED, AuthMessages.EMAIL_OR_PASSWORD_INVALID.toString());
     }
 
     // Generate JWT token
@@ -137,13 +136,11 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is already enabled
     if (user.isEnabled()) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.getMessage());
+      throw new AppException(HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.toString());
     }
 
     // Check if verification token already exists
@@ -151,7 +148,7 @@ public class AuthService {
     if (jwtService.isValidToken(oldToken)
         && Long.valueOf(jwtService.getSubject(oldToken)) == user.getId()) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_ALREADY_SENT.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_ALREADY_SENT.toString());
     }
 
     // Generate verification token
@@ -160,12 +157,7 @@ public class AuthService {
     String token = jwtService.generateToken(extraClaims, user.getId());
 
     // Send verification email
-    try {
-      emailService.sendVerificationEmail(user.getEmail(), token);
-    } catch (MailException e) {
-      throw new AppException(
-          HttpStatus.INTERNAL_SERVER_ERROR, AuthMessages.EMAIL_SENDING_FAILED.getMessage());
-    }
+    emailService.sendVerificationEmail(user.getEmail(), token);
 
     // Save token
     user.setVerificationToken(token);
@@ -183,7 +175,7 @@ public class AuthService {
     // Check if the token is valid
     if (!jwtService.isValidToken(token)) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_VERIFICATION_TOKEN.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_VERIFICATION_TOKEN.toString());
     }
 
     // Get user ID from token
@@ -193,19 +185,17 @@ public class AuthService {
             .findById(userId)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if verification token is valid
     if (user.getVerificationToken() == null || !user.getVerificationToken().equals(token)) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_NOT_FOUND.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.VERIFICATION_TOKEN_NOT_FOUND.toString());
     }
 
     // Check if user is already enabled
     if (user.isEnabled()) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.getMessage());
+      throw new AppException(HttpStatus.BAD_REQUEST, UserMessages.USER_ALREADY_ENABLED.toString());
     }
 
     // Enable the user and clear the verification token
@@ -261,14 +251,13 @@ public class AuthService {
 
     // Validate the refresh token
     if (!jwtService.isValidToken(token)) {
-      throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+      throw new AppException(HttpStatus.BAD_REQUEST, AuthMessages.INVALID_REFRESH_TOKEN.toString());
     }
 
     // Check if refresh token is blacklisted
     if (blacklistTokenRepository.existsById(token)) {
       throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.REFRESH_TOKEN_BLACKLISTED.getMessage());
+          HttpStatus.UNAUTHORIZED, AuthMessages.REFRESH_TOKEN_BLACKLISTED.toString());
     }
 
     // Get user from token
@@ -316,16 +305,15 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is locked or disabled
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.toString());
     }
 
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // Check if a reset password token is already sent
@@ -333,7 +321,7 @@ public class AuthService {
     if (jwtService.isValidToken(oldToken)
         && Long.valueOf(jwtService.getSubject(oldToken)) == user.getId()) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.RESET_PASSWORD_TOKEN_ALREADY_SENT.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.RESET_PASSWORD_TOKEN_ALREADY_SENT.toString());
     }
 
     // Generate reset password token
@@ -343,12 +331,7 @@ public class AuthService {
     String token = jwtService.generateToken(extraClaims, user.getId());
 
     // Send reset password email
-    try {
-      emailService.sendResetPasswordEmail(user.getEmail(), token);
-    } catch (MailException e) {
-      throw new AppException(
-          HttpStatus.INTERNAL_SERVER_ERROR, AuthMessages.EMAIL_SENDING_FAILED.getMessage());
-    }
+    emailService.sendResetPasswordEmail(user.getEmail(), token);
 
     // Update user's verification token
     user.setVerificationToken(token);
@@ -369,7 +352,7 @@ public class AuthService {
     // Validate the reset password token
     if (!jwtService.isValidToken(resetPasswordDTO.getToken())) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.toString());
     }
 
     // Get user from token
@@ -379,23 +362,22 @@ public class AuthService {
             .findByEmail(email)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
     // Check if user is locked
     if (user.isLocked()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_LOCKED.toString());
     }
 
     // Check if user is enabled
     if (!user.isEnabled()) {
-      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_ENABLED.toString());
     }
 
     // Check if reset password token is valid
     if (!resetPasswordDTO.getToken().equals(user.getVerificationToken())) {
       throw new AppException(
-          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.getMessage());
+          HttpStatus.BAD_REQUEST, AuthMessages.INVALID_RESET_PASSWORD_TOKEN.toString());
     }
 
     // Update user's password
@@ -414,12 +396,12 @@ public class AuthService {
     // Check refresh token is valid
     if (!jwtService.isValidToken(refreshToken)) {
       throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.toString());
     }
 
     if (blacklistTokenRepository.existsById(refreshToken)) {
       throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.toString());
     }
 
     String email = jwtService.getPayload(refreshToken).get("email", String.class);
@@ -427,7 +409,7 @@ public class AuthService {
         (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     if (userDetails.getEmail() == null || !userDetails.getEmail().equals(email)) {
       throw new AppException(
-          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.getMessage());
+          HttpStatus.UNAUTHORIZED, AuthMessages.INVALID_REFRESH_TOKEN.toString());
     }
 
     // Blacklist the refresh token

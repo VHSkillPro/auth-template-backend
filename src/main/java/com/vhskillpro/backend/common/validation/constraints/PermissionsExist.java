@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PermissionsExistValidator.class)
 public @interface PermissionsExist {
-  String message() default "One or more permissions do not exist.";
+  String message() default "PERMISSION_NOT_FOUND";
 
   Class<?>[] groups() default {};
 

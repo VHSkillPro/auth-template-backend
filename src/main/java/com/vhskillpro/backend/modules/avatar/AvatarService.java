@@ -83,8 +83,7 @@ public class AvatarService {
             .findById(userId)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
     String avatarUrl = user.getAvatarUrl();
 
     return AvatarDTO.builder()
@@ -113,7 +112,7 @@ public class AvatarService {
               .orElseThrow(
                   () ->
                       new AppException(
-                          HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                          HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
 
       // Upload the avatar file and get the object key
       String objectKey = uploadAvatar(avatarFile);
@@ -151,8 +150,7 @@ public class AvatarService {
             .findById(userId)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND.toString()));
     String avatarUrl = user.getAvatarUrl();
     if (avatarUrl != null) {
       deleteAvatar(avatarUrl);

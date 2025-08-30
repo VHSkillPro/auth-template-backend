@@ -1,7 +1,6 @@
 package com.vhskillpro.backend.modules.role.dto;
 
 import com.vhskillpro.backend.common.validation.constraints.PermissionsExist;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -14,18 +13,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Data Transfer Object for updating an existing role")
 public class RoleUpdateDTO {
-  @Schema(description = "Title of the role", example = "Administrator")
-  @NotBlank(message = "Title is required")
+  @NotBlank(message = "ROLE_TITLE_REQUIRED")
   private String title;
 
-  @Schema(description = "Description of the role", example = "Full access to all resources")
-  @NotNull(message = "Description is required")
+  @NotNull(message = "ROLE_DESCRIPTION_REQUIRED")
   private String description;
 
-  @Schema(description = "List of permission IDs associated with the role", example = "[1, 2, 3]")
-  @NotNull(message = "Permissions are required")
-  @PermissionsExist(message = "One or more permissions do not exist")
+  @NotNull(message = "ROLE_PERMISSION_IDS_REQUIRED")
+  @PermissionsExist()
   private List<Long> permissionIds;
 }

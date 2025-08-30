@@ -4,6 +4,8 @@ import com.vhskillpro.backend.common.constants.MessageConstants;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.BadRequestResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.swagger.InternalServerErrorApiResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ public class GlobalExceptionHandler {
    * @param ex the {@link AppException} instance that was thrown
    * @return an {@link ApiResponse} containing information about the exception
    */
+  @Hidden
   @ExceptionHandler(AppException.class)
   public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
     return ResponseEntity.status(ex.getStatusCode()).body(ApiResponse.from(ex));
@@ -41,12 +44,13 @@ public class GlobalExceptionHandler {
    * @param ex the exception containing validation errors
    * @return a {@link DataApiResponse} containing the bad request details and error message
    */
+  @Hidden
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public DataApiResponse<BadRequestResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException ex) {
     BadRequestResponse response = BadRequestResponse.from(ex);
-    return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.getMessage());
+    return DataApiResponse.badRequest(response, MessageConstants.BAD_REQUEST.toString());
   }
 
   /**
@@ -57,19 +61,12 @@ public class GlobalExceptionHandler {
    * @param ex the {@code InsufficientAuthenticationException} encountered
    * @return an {@code ApiResponse<Void>} indicating unauthorized access
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "401",
-      description = "Unauthorized",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @Hidden
   @ExceptionHandler(InsufficientAuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiResponse<Void> handleInsufficientAuthenticationException(
       InsufficientAuthenticationException ex) {
-    return ApiResponse.unauthorized(ex.getMessage());
+    return ApiResponse.unauthorized(MessageConstants.UNAUTHORIZED.toString());
   }
 
   /**
@@ -80,18 +77,11 @@ public class GlobalExceptionHandler {
    * @param ex the {@link AuthorizationDeniedException} instance
    * @return an {@link ApiResponse} with forbidden status and the exception message
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "403",
-      description = "Forbidden",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @Hidden
   @ExceptionHandler(AuthorizationDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ApiResponse<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
-    return ApiResponse.forbidden(ex.getMessage());
+    return ApiResponse.forbidden(MessageConstants.ACCESS_DENIED.toString());
   }
 
   /**
@@ -101,18 +91,11 @@ public class GlobalExceptionHandler {
    * @param ex the exception that was thrown
    * @return an {@link ApiResponse} indicating an internal server error
    */
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "500",
-      description = "Internal Server Error",
-      content =
-          @io.swagger.v3.oas.annotations.media.Content(
-              mediaType = "application/json",
-              schema =
-                  @io.swagger.v3.oas.annotations.media.Schema(implementation = ApiResponse.class)))
+  @InternalServerErrorApiResponse
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiResponse<Void> handleException(Exception ex) {
-    logger.error(MessageConstants.INTERNAL_SERVER_ERROR.getMessage(), ex);
-    return ApiResponse.internalServerError(MessageConstants.INTERNAL_SERVER_ERROR.getMessage());
+    logger.error(MessageConstants.INTERNAL_SERVER_ERROR.toString(), ex);
+    return ApiResponse.internalServerError(MessageConstants.INTERNAL_SERVER_ERROR.toString());
   }
 }

@@ -105,8 +105,7 @@ public class RoleService {
             .findById(id)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage()));
+                    new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.toString()));
 
     role.setTitle(roleUpdateDTO.getTitle());
     role.setDescription(roleUpdateDTO.getDescription());
@@ -130,12 +129,12 @@ public class RoleService {
   @Transactional
   public void delete(Long roleId) {
     if (!roleRepository.existsById(roleId)) {
-      throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage());
+      throw new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.toString());
     }
 
     // Check if the role is associated with any users
     if (userRepository.existsByRoleId(roleId)) {
-      throw new AppException(HttpStatus.CONFLICT, RoleMessages.ROLE_DELETE_CONFLICT.getMessage());
+      throw new AppException(HttpStatus.CONFLICT, RoleMessages.ROLE_DELETE_CONFLICT.toString());
     }
 
     roleRepository.deleteById(roleId);

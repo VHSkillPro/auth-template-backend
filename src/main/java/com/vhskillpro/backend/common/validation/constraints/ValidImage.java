@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ValidImageValidator.class)
 public @interface ValidImage {
-  String message() default "Invalid image file";
+  String message() default "USER_AVATAR_INVALID";
 
   Class<?>[] groups() default {};
 

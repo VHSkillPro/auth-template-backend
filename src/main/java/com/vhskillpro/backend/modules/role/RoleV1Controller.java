@@ -3,7 +3,9 @@ package com.vhskillpro.backend.modules.role;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.response.PagedApiResponse;
-import com.vhskillpro.backend.common.swagger.BadRequestDataApiResponse;
+import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
+import com.vhskillpro.backend.common.swagger.ForbiddenApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.exception.AppException;
 import com.vhskillpro.backend.modules.role.dto.RoleCreateDTO;
 import com.vhskillpro.backend.modules.role.dto.RoleDTO;
@@ -32,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/role")
-@Tag(name = "Role (V1)", description = "APIs for CRUD operations on roles")
+@Tag(name = "Role (V1)", description = "APIs for managing roles")
 public class RoleV1Controller {
   private RoleService roleService;
 
@@ -48,34 +50,32 @@ public class RoleV1Controller {
    * @return A paginated API response containing RoleDTO objects and a success message.
    */
   @Operation(
-      summary = "Get paginated roles list",
-      description =
-          "Fetches a list of roles with optional keyword-based search and pagination. "
-              + "If no keyword is provided, all roles are returned.",
+      summary = "Get list roles",
       parameters = {
-        @Parameter(name = "keyword", description = "Search keyword to filter", example = "read"),
-        @Parameter(name = "page", description = "Page number (0-based index)", example = "0"),
-        @Parameter(name = "size", description = "Number of items per page", example = "10"),
+        @Parameter(name = "keyword", description = "Search keyword to filter"),
+        @Parameter(name = "page", description = "Page number (0-based index)"),
+        @Parameter(name = "size", description = "Number of items per page"),
         @Parameter(
             name = "sort",
-            description = "Sorting criteria in the format: property(,asc|desc)",
-            example = "name,asc")
+            description = "Sorting criteria in the format: property(,asc|desc)")
       },
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Roles list retrieved successfully",
+            description = "ROLE_INDEX_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = PagedApiResponseRoleDTO.class)))
+                    schema = @Schema(implementation = PagedApiResponseRoleDTO.class))),
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping
   public PagedApiResponse<RoleDTO> index(
       @RequestParam(defaultValue = "") String keyword,
       @Parameter(hidden = true) Pageable pageable) {
     Page<RoleDTO> roleDTOs = roleService.findAll(keyword, pageable);
-    return PagedApiResponse.success(roleDTOs, RoleMessages.ROLE_INDEX_SUCCESS.getMessage());
+    return PagedApiResponse.success(roleDTOs, RoleMessages.ROLE_INDEX_SUCCESS.toString());
   }
 
   /**
@@ -86,27 +86,26 @@ public class RoleV1Controller {
    * @throws AppException if the role with the specified ID is not found
    */
   @Operation(
-      summary = "Get role by ID",
-      description = "Fetches the details of a specific role by its ID.",
-      parameters = {
-        @Parameter(name = "id", description = "ID of the role to retrieve", example = "1")
-      },
+      summary = "Get role detail by ID",
+      parameters = {@Parameter(name = "id", description = "Role ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Role retrieved successfully",
+            description = "ROLE_SHOW_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = DataApiResponseRoleDetailDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
-            description = "Role not found",
+            description = "ROLE_NOT_FOUND",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @GetMapping("/{id}")
   public DataApiResponse<RoleDetailDTO> show(@PathVariable Long id) {
     RoleDetailDTO roleDTO =
@@ -114,9 +113,8 @@ public class RoleV1Controller {
             .findById(id)
             .orElseThrow(
                 () ->
-                    new AppException(
-                        HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.getMessage()));
-    return DataApiResponse.success(roleDTO, RoleMessages.ROLE_SHOW_SUCCESS.getMessage());
+                    new AppException(HttpStatus.NOT_FOUND, RoleMessages.ROLE_NOT_FOUND.toString()));
+    return DataApiResponse.success(roleDTO, RoleMessages.ROLE_SHOW_SUCCESS.toString());
   }
 
   /**
@@ -128,28 +126,23 @@ public class RoleV1Controller {
    */
   @Operation(
       summary = "Create a new role",
-      description = "Creates a new role with the provided details.",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "201",
-            description = "Role created successfully",
+            description = "ROLE_CREATE_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Bad request",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = BadRequestDataApiResponse.class)))
+                    schema = @Schema(implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ApiResponse<Void> create(@Valid @RequestBody RoleCreateDTO roleCreateDTO) {
     roleService.create(roleCreateDTO);
-    return ApiResponse.created(RoleMessages.ROLE_CREATE_SUCCESS.getMessage());
+    return ApiResponse.created(RoleMessages.ROLE_CREATE_SUCCESS.toString());
   }
 
   /**
@@ -161,39 +154,31 @@ public class RoleV1Controller {
    */
   @Operation(
       summary = "Update role by ID",
-      description =
-          "Updates an existing role with the specified ID using the provided update data.",
-      parameters = {
-        @Parameter(name = "id", description = "ID of the role to update", example = "1")
-      },
+      parameters = {@Parameter(name = "id", description = "Role ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Role updated successfully",
+            description = "ROLE_UPDATE_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Bad request",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = BadRequestDataApiResponse.class))),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
-            description = "Role not found",
+            description = "ROLE_NOT_FOUND",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @PutMapping("/{id}")
   public ApiResponse<Void> update(
       @PathVariable Long id, @Valid @RequestBody RoleUpdateDTO roleUpdateDTO) {
     roleService.update(id, roleUpdateDTO);
-    return ApiResponse.success(RoleMessages.ROLE_UPDATE_SUCCESS.getMessage());
+    return ApiResponse.success(RoleMessages.ROLE_UPDATE_SUCCESS.toString());
   }
 
   /**
@@ -205,37 +190,36 @@ public class RoleV1Controller {
    */
   @Operation(
       summary = "Delete role by ID",
-      description = "Deletes a specific role by its ID.",
-      parameters = {
-        @Parameter(name = "id", description = "ID of the role to delete", example = "1")
-      },
+      parameters = {@Parameter(name = "id", description = "Role ID")},
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Role deleted successfully",
+            description = "ROLE_DELETE_SUCCESS",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
-            description = "Role not found",
+            description = "ROLE_NOT_FOUND",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "409",
-            description = "Role delete conflict",
+            description = "ROLE_DELETE_CONFLICT",
             content =
                 @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
+  @ForbiddenApiResponse
   @DeleteMapping("/{id}")
   public ApiResponse<Void> delete(@PathVariable Long id) {
     roleService.delete(id);
-    return ApiResponse.success(RoleMessages.ROLE_DELETE_SUCCESS.getMessage());
+    return ApiResponse.success(RoleMessages.ROLE_DELETE_SUCCESS.toString());
   }
 
   private class PagedApiResponseRoleDTO extends PagedApiResponse<RoleDTO> {}

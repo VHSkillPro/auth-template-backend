@@ -1,7 +1,6 @@
 package com.vhskillpro.backend.modules.user.dto;
 
 import com.vhskillpro.backend.common.validation.constraints.EmailNotExisted;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -14,28 +13,21 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "Data transfer object for creating a new user")
 public class UserCreateDTO {
-  @Schema(description = "Email of the user", example = "user@example.com")
-  @NotBlank(message = "Email is required")
-  @Email(message = "Email is invalid")
-  @EmailNotExisted(message = "Email already exists")
+  @NotBlank(message = "USER_EMAIL_REQUIRED")
+  @Email(message = "USER_EMAIL_INVALID")
+  @EmailNotExisted(message = "USER_EMAIL_ALREADY_EXISTS")
   private String email;
 
-  @Schema(description = "Password of the user")
-  @NotBlank(message = "Password is required")
+  @NotBlank(message = "USER_PASSWORD_REQUIRED")
   @Pattern(
       regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$",
-      message =
-          "Password must be at least 8 characters long and contain at least one number, one"
-              + " lowercase letter, one uppercase letter, and one special character")
+      message = "USER_PASSWORD_INVALID")
   private String password;
 
-  @Schema(description = "Last name of the user", example = "Doe")
-  @NotBlank(message = "Last name is required")
+  @NotBlank(message = "USER_LAST_NAME_REQUIRED")
   private String lastName;
 
-  @Schema(description = "First name of the user", example = "John")
-  @NotBlank(message = "First name is required")
+  @NotBlank(message = "USER_FIRST_NAME_REQUIRED")
   private String firstName;
 }
