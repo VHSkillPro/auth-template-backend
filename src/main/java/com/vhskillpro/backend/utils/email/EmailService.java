@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,6 +32,7 @@ public class EmailService {
    * @param token the verification token to be included in the email link
    * @throws MailException if there is an error sending the email
    */
+  @Async
   public void sendVerificationEmail(String to, String token) {
     try {
       String subject = "Email Verification";
@@ -44,7 +46,7 @@ public class EmailService {
 
       emailSender.send(message);
     } catch (MailException ex) {
-      throw ex;
+      ex.printStackTrace();
     }
   }
 
@@ -57,6 +59,7 @@ public class EmailService {
    * @param token the password reset token to be included in the reset link
    * @throws MailException if there is an error sending the email
    */
+  @Async
   public void sendResetPasswordEmail(String to, String token) {
     try {
       String subject = "Reset Password";
@@ -69,7 +72,7 @@ public class EmailService {
 
       emailSender.send(message);
     } catch (MailException ex) {
-      throw ex;
+      ex.printStackTrace();
     }
   }
 }

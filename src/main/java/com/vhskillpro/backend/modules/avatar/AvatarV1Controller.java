@@ -3,6 +3,7 @@ package com.vhskillpro.backend.modules.avatar;
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
 import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.modules.avatar.dto.AvatarDTO;
 import com.vhskillpro.backend.modules.user.CustomUserDetails;
 import com.vhskillpro.backend.modules.user.dto.UserUploadAvatarDTO;
@@ -63,6 +64,7 @@ public class AvatarV1Controller {
                             implementation = ApiResponse.class))),
       })
   @BadRequestApiResponse
+  @UnauthorizedApiResponse
   @PutMapping(value = "/avatar", consumes = "multipart/form-data")
   public ApiResponse<Void> uploadAvatar(
       Authentication authentication,
@@ -92,6 +94,7 @@ public class AvatarV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = DataApiResponseAvatarDTO.class)))
       })
+  @UnauthorizedApiResponse
   @GetMapping(value = "/avatar")
   public DataApiResponse<AvatarDTO> getAvatar(Authentication authentication) {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
@@ -122,6 +125,7 @@ public class AvatarV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class)))
       })
+  @UnauthorizedApiResponse
   @DeleteMapping(value = "/avatar")
   @ResponseStatus(HttpStatus.OK)
   public ApiResponse<Void> deleteAvatar(Authentication authentication) {

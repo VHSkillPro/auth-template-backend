@@ -2,6 +2,8 @@ package com.vhskillpro.backend.modules.auth;
 
 import com.vhskillpro.backend.common.response.ApiResponse;
 import com.vhskillpro.backend.common.response.DataApiResponse;
+import com.vhskillpro.backend.common.swagger.BadRequestApiResponse;
+import com.vhskillpro.backend.common.swagger.UnauthorizedApiResponse;
 import com.vhskillpro.backend.modules.auth.dto.ProfileDTO;
 import com.vhskillpro.backend.modules.auth.dto.RefreshDTO;
 import com.vhskillpro.backend.modules.auth.dto.ResendVerificationEmailDTO;
@@ -44,12 +46,10 @@ public class AuthV1Controller {
    */
   @Operation(
       summary = "Sign In",
-      description =
-          "Authenticates a user and returns a JWT token. This API doesn't need authentication.",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User signed in successfully",
+            description = "SIGN_IN_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -57,8 +57,8 @@ public class AuthV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = DataApiResponseTokenDTO.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Bad request, e.g., invalid credentials",
+            responseCode = "401",
+            description = "EMAIL_OR_PASSWORD_INVALID, USER_NOT_ENABLED, USER_LOCKED",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -66,10 +66,11 @@ public class AuthV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
   @PostMapping("/sign-in")
   public DataApiResponse<TokenDTO> signIn(@Valid @RequestBody SignInDTO signInDTO) {
     TokenDTO token = authService.signIn(signInDTO);
-    return DataApiResponse.success(token, AuthMessages.SIGN_IN_SUCCESS.getMessage());
+    return DataApiResponse.success(token, AuthMessages.SIGN_IN_SUCCESS.toString());
   }
 
   /**
@@ -83,14 +84,11 @@ public class AuthV1Controller {
    * @return {@link ApiResponse} indicating the result of the operation
    */
   @Operation(
-      summary = "Resend Verification Email",
-      description =
-          "Resends a verification email to the user with the specified email address. This API"
-              + " doesn't need authentication.",
+      summary = "Send Verification Email",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Verification email resent successfully",
+            description = "SEND_VERIFICATION_EMAIL_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -99,19 +97,28 @@ public class AuthV1Controller {
                             implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Bad request, e.g., user already enabled or token already sent",
+            description = "USER_ALREADY_ENABLED, VERIFICATION_TOKEN_ALREADY_SENT",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = ApiResponse.class)))
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
       })
-  @PostMapping("/resend-verification-email")
+  @PostMapping("/send-verification-email")
   public ApiResponse<Void> resendVerificationEmail(
       @Valid @RequestBody ResendVerificationEmailDTO resendVerificationEmailDTO) {
     authService.sendVerificationEmail(resendVerificationEmailDTO.getEmail());
-    return ApiResponse.success(AuthMessages.RESEND_VERIFICATION_EMAIL_SUCCESS.getMessage());
+    return ApiResponse.success(AuthMessages.SEND_VERIFICATION_EMAIL_SUCCESS.toString());
   }
 
   /**
@@ -125,9 +132,6 @@ public class AuthV1Controller {
    */
   @Operation(
       summary = "Verify Email",
-      description =
-          "Verifies a user's email address using the provided token. This API doesn't need"
-              + " authentication.",
       parameters = {
         @io.swagger.v3.oas.annotations.Parameter(
             name = "token",
@@ -137,7 +141,7 @@ public class AuthV1Controller {
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Email verified successfully",
+            description = "EMAIL_VERIFY_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -146,7 +150,17 @@ public class AuthV1Controller {
                             implementation = ApiResponse.class))),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Bad request, e.g., invalid or expired token",
+            description =
+                "INVALID_VERIFICATION_TOKEN, VERIFICATION_TOKEN_NOT_FOUND, USER_ALREADY_ENABLED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -157,7 +171,7 @@ public class AuthV1Controller {
   @GetMapping("/verify-email")
   public ApiResponse<Void> verifyEmail(@RequestParam String token) {
     authService.verifyEmail(token);
-    return ApiResponse.success(AuthMessages.EMAIL_VERIFICATION_SUCCESS.getMessage());
+    return ApiResponse.success(AuthMessages.EMAIL_VERIFY_SUCCESS.toString());
   }
 
   /**
@@ -169,12 +183,11 @@ public class AuthV1Controller {
    * @return a {@link DataApiResponse} containing the {@link ProfileDTO} of the authenticated user
    */
   @Operation(
-      summary = "Get User Profile",
-      description = "Fetches the profile of the authenticated user.",
+      summary = "Get user profile",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Profile fetched successfully",
+            description = "PROFILE_GET_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -182,11 +195,12 @@ public class AuthV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = DataApiResponseProfileDTO.class))),
       })
+  @UnauthorizedApiResponse
   @GetMapping("/profile")
   public DataApiResponse<ProfileDTO> getProfile(Authentication authentication) {
     Long userId = ((CustomUserDetails) authentication.getPrincipal()).getId();
     ProfileDTO profile = authService.getProfile(userId);
-    return DataApiResponse.success(profile, AuthMessages.PROFILE_FETCH_SUCCESS.getMessage());
+    return DataApiResponse.success(profile, AuthMessages.PROFILE_GET_SUCCESS.toString());
   }
 
   /**
@@ -200,23 +214,31 @@ public class AuthV1Controller {
    *     message
    */
   @Operation(
-      summary = "Refresh Token",
-      description = "Refreshes the access token using the provided refresh token.",
+      summary = "Refresh",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Token refreshed successfully",
+            description = "REFRESH_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
                     schema =
                         @io.swagger.v3.oas.annotations.media.Schema(
-                            implementation = DataApiResponseTokenDTO.class)))
+                            implementation = DataApiResponseTokenDTO.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "INVALID_REFRESH_TOKEN, REFRESH_TOKEN_BLACKLISTED",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class)))
       })
   @PostMapping("/refresh")
   public DataApiResponse<TokenDTO> refresh(@Valid @RequestBody RefreshDTO refreshDTO) {
     TokenDTO tokenDTO = authService.refresh(refreshDTO);
-    return DataApiResponse.success(tokenDTO, AuthMessages.TOKEN_REFRESH_SUCCESS.getMessage());
+    return DataApiResponse.success(tokenDTO, AuthMessages.REFRESH_SUCCESS.toString());
   }
 
   /**
@@ -230,12 +252,29 @@ public class AuthV1Controller {
    * @return an {@link ApiResponse} indicating the result of the operation
    */
   @Operation(
-      summary = "Send Reset Password Email",
-      description = "Sends a password reset email to the user.",
+      summary = "Send reset password email",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Reset password email sent successfully",
+            description = "RESET_PASSWORD_EMAIL_SENT",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "RESET_PASSWORD_TOKEN_ALREADY_SENT",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND, USER_LOCKED, USER_NOT_ENABLED",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -247,7 +286,7 @@ public class AuthV1Controller {
   public ApiResponse<Void> sendResetPasswordEmail(
       @Valid @RequestBody SendResetPasswordEmailDTO sendResetPasswordEmail) {
     authService.sendResetPasswordEmail(sendResetPasswordEmail.getEmail());
-    return ApiResponse.success(AuthMessages.RESET_PASSWORD_EMAIL_SENT.getMessage());
+    return ApiResponse.success(AuthMessages.RESET_PASSWORD_EMAIL_SENT.toString());
   }
 
   /**
@@ -261,12 +300,29 @@ public class AuthV1Controller {
    * @return an {@link ApiResponse} indicating the success of the password reset operation
    */
   @Operation(
-      summary = "Reset Password",
-      description = "Resets the user's password using the provided token and new password.",
+      summary = "Reset password",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Password reset successfully",
+            description = "RESET_PASSWORD_SUCCESS",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "INVALID_RESET_PASSWORD_TOKEN",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "USER_NOT_FOUND, USER_LOCKED, USER_NOT_ENABLED",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -277,7 +333,7 @@ public class AuthV1Controller {
   @PostMapping("/reset-password")
   public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
     authService.resetPassword(resetPasswordDTO);
-    return ApiResponse.success(AuthMessages.RESET_PASSWORD_SUCCESS.getMessage());
+    return ApiResponse.success(AuthMessages.RESET_PASSWORD_SUCCESS.toString());
   }
 
   /**
@@ -290,12 +346,20 @@ public class AuthV1Controller {
    * @return an {@link ApiResponse} indicating successful sign out
    */
   @Operation(
-      summary = "Sign Out",
-      description = "Signs out the user by invalidating the provided refresh token.",
+      summary = "Sign out",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User signed out successfully",
+            description = "SIGN_OUT_SUCCESS",
+            content =
+                @io.swagger.v3.oas.annotations.media.Content(
+                    mediaType = "application/json",
+                    schema =
+                        @io.swagger.v3.oas.annotations.media.Schema(
+                            implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "INVALID_REFRESH_TOKEN",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -308,7 +372,7 @@ public class AuthV1Controller {
       @RequestHeader("Authorization") String bearerToken, @RequestParam String refreshToken) {
     String accessToken = bearerToken.substring("Bearer ".length());
     authService.signOut(accessToken, refreshToken);
-    return ApiResponse.success(AuthMessages.SIGN_OUT_SUCCESS.getMessage());
+    return ApiResponse.success(AuthMessages.SIGN_OUT_SUCCESS.toString());
   }
 
   /**
@@ -322,12 +386,11 @@ public class AuthV1Controller {
    * @return an {@link ApiResponse} indicating the result of the registration process
    */
   @Operation(
-      summary = "Sign Up",
-      description = "Registers a new user with the provided details.",
+      summary = "Sign up",
       responses = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "User registered successfully",
+            description = "SIGN_UP_SUCCESS",
             content =
                 @io.swagger.v3.oas.annotations.media.Content(
                     mediaType = "application/json",
@@ -335,10 +398,11 @@ public class AuthV1Controller {
                         @io.swagger.v3.oas.annotations.media.Schema(
                             implementation = ApiResponse.class)))
       })
+  @BadRequestApiResponse
   @PostMapping("/sign-up")
   public ApiResponse<Void> signUp(@Valid @RequestBody SignUpDTO signUpDTO) {
     authService.signUp(signUpDTO);
-    return ApiResponse.success(AuthMessages.SIGN_UP_SUCCESS.getMessage());
+    return ApiResponse.success(AuthMessages.SIGN_UP_SUCCESS.toString());
   }
 
   private class DataApiResponseTokenDTO extends DataApiResponse<TokenDTO> {}
