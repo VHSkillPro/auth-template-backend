@@ -50,7 +50,7 @@ public class WebSecurityConfig {
    */
   private static final String[] WHITELIST_URLS = {
     "/api/v1/auth/sign-in",
-    "/api/v1/auth/resend-verification-email",
+    "/api/v1/auth/send-verification-email",
     "/api/v1/auth/verify-email",
     "/api/v1/auth/refresh",
     "/api/v1/auth/send-reset-password-email",
